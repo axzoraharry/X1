@@ -156,11 +156,14 @@ backend:
     file: "/app/backend/routes/recharge.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Mobile, DTH, utility bill payment services with operator detection and Happy Paisa integration"
+      - working: true
+        agent: "testing"
+        comment: "Tested all recharge API endpoints. Mobile recharge, DTH recharge, and utility bill payments are working correctly. Operator detection and plan retrieval are functioning as expected. Happy Paisa integration for payments is working properly."
 
   - task: "E-commerce Platform API"
     implemented: true
