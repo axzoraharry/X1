@@ -1,54 +1,61 @@
-import { useEffect } from "react";
+import React, { useState } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import { Toaster } from "./components/ui/toaster";
+import Header from "./components/layout/Header";
+import Sidebar from "./components/layout/Sidebar";
+import Dashboard from "./pages/Dashboard";
+import Travel from "./pages/Travel";
+import Recharge from "./pages/Recharge";
+import Shop from "./pages/Shop";
+import Wallet from "./pages/Wallet";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const App = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isVoiceListening, setIsVoiceListening] = useState(false);
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
+  const handleVoiceToggle = () => {
+    setIsVoiceListening(!isVoiceListening);
   };
 
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
-
-function App() {
   return (
     <div className="App">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <div className="flex h-screen bg-background">
+          {/* Sidebar */}
+          <Sidebar collapsed={sidebarCollapsed} />
+          
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Header */}
+            <Header 
+              onVoiceToggle={handleVoiceToggle}
+              isListening={isVoiceListening}
+            />
+            
+            {/* Page Content */}
+            <main className="flex-1 overflow-y-auto bg-gray-50/30">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/travel" element={<Travel />} />
+                <Route path="/recharge" element={<Recharge />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/wallet" element={<Wallet />} />
+                <Route path="/git" element={<div className="p-6"><h1 className="text-2xl font-bold">Git Activity Coming Soon</h1></div>} />
+                <Route path="/weather" element={<div className="p-6"><h1 className="text-2xl font-bold">Weather Details Coming Soon</h1></div>} />
+                <Route path="/analytics" element={<div className="p-6"><h1 className="text-2xl font-bold">Analytics Dashboard Coming Soon</h1></div>} />
+                <Route path="/payments" element={<div className="p-6"><h1 className="text-2xl font-bold">Payment History Coming Soon</h1></div>} />
+                <Route path="/settings" element={<div className="p-6"><h1 className="text-2xl font-bold">Settings Panel Coming Soon</h1></div>} />
+              </Routes>
+            </main>
+          </div>
+        </div>
+        
+        {/* Toast Notifications */}
+        <Toaster />
       </BrowserRouter>
     </div>
   );
-}
+};
 
 export default App;
