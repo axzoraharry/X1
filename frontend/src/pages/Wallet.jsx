@@ -337,4 +337,4 @@ const WalletPage = () => {
   );
 };
 
-export default Wallet;
+export default WalletPage;
