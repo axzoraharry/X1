@@ -284,6 +284,8 @@ class AutomationService:
                     success = response.status == 200
                     if not success:
                         logger.error(f"n8n webhook failed: {response.status} - {await response.text()}")
+                    else:
+                        logger.info(f"n8n webhook success: {workflow_type}")
                     return success
                     
         except Exception as e:
