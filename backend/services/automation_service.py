@@ -376,7 +376,7 @@ class AutomationService:
         }
     
     @staticmethod
-    async def _handle_ai_webhook(payload: WebhookPayload) -> Dict[str, Any]::
+    async def _handle_ai_webhook(payload: WebhookPayload) -> Dict[str, Any]:
         """
         Handle AI processing workflow webhook results
         """
