@@ -52,7 +52,9 @@ class NotificationService:
                 "timestamp": datetime.utcnow().isoformat()
             }
             
-            # Create automation trigger for notification
+            # Create automation trigger for notification using lazy import
+            from ..models.automation import AutomationTrigger
+            
             automation_trigger = AutomationTrigger(
                 user_id=user_id,
                 event_type="notification_request",
@@ -60,7 +62,8 @@ class NotificationService:
                 automation_type="messaging"
             )
             
-            # Execute notification
+            # Execute notification using lazy import
+            from .automation_service import AutomationService
             response = await AutomationService.execute_automation(automation_trigger)
             
             # Store notification record
