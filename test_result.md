@@ -365,7 +365,9 @@ test_plan:
     - "API Integration Services"
     - "User Context & Authentication"
     - "Real-time Dashboard"
-  stuck_tasks: []
+    - "n8n Automation Integration"
+  stuck_tasks:
+    - "n8n Automation Integration"
   test_all: false
   test_priority: "high_first"
 
