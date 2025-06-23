@@ -186,11 +186,14 @@ backend:
     file: "/app/backend/routes/dashboard.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "User overview, statistics, notifications, and spending insights API endpoints"
+      - working: true
+        agent: "testing"
+        comment: "Tested all dashboard API endpoints. User overview, statistics, notifications, and spending insights are working correctly. Data aggregation from various services is functioning properly."
 
   - task: "Database Models & Services"
     implemented: true
