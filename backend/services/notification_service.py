@@ -5,8 +5,6 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 import os
 from .database import get_collection
-from .automation_service import AutomationService
-from ..models.automation import AutomationTrigger
 
 logger = logging.getLogger(__name__)
 
