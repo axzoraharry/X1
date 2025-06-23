@@ -8,8 +8,8 @@ import Sidebar from "./components/layout/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import Travel from "./pages/Travel";
 import Recharge from "./pages/Recharge";
-import Shop from "./pages/Shop";
-import Wallet from "./pages/Wallet";
+import ShopUpdated from "./pages/ShopUpdated";
+import WalletUpdated from "./pages/WalletUpdated";
 
 const App = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -41,8 +41,8 @@ const App = () => {
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/travel" element={<Travel />} />
                   <Route path="/recharge" element={<Recharge />} />
-                  <Route path="/shop" element={<Shop />} />
-                  <Route path="/wallet" element={<Wallet />} />
+                  <Route path="/shop" element={<ShopUpdated />} />
+                  <Route path="/wallet" element={<WalletUpdated />} />
                   <Route path="/git" element={<div className="p-6"><h1 className="text-2xl font-bold">Git Activity Coming Soon</h1></div>} />
                   <Route path="/weather" element={<div className="p-6"><h1 className="text-2xl font-bold">Weather Details Coming Soon</h1></div>} />
                   <Route path="/analytics" element={<div className="p-6"><h1 className="text-2xl font-bold">Analytics Dashboard Coming Soon</h1></div>} />
