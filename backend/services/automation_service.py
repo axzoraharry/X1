@@ -157,7 +157,8 @@ class AutomationService:
             user_collection = await get_collection("users")
             user_data = await user_collection.find_one({"id": trigger.user_id})
             
-            # Get wallet data
+            # Get wallet data using lazy import
+            from .wallet_service import WalletService
             wallet_balance = await WalletService.get_balance(trigger.user_id)
             
             sync_payload = {
