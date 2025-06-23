@@ -89,6 +89,38 @@ class WalletService:
             transaction.type
         )
         
+        # Trigger automation workflows
+        try:
+            # Send transaction notification
+            await NotificationService.send_transaction_notification(
+                user_id=transaction.user_id,
+                transaction_data=new_transaction.dict(),
+                notification_channels=["telegram"]
+            )
+            
+            # Check for low balance alert
+            if transaction.type == "debit":
+                balance = await WalletService.get_balance(transaction.user_id)
+                if balance.balance_hp < 1.0:  # Low balance threshold: 1 HP
+                    await NotificationService.send_low_balance_alert(
+                        user_id=transaction.user_id,
+                        current_balance=balance.balance_hp,
+                        notification_channels=["telegram", "sms"]
+                    )
+            
+            # Trigger AI analysis for spending insights (weekly)
+            if transaction.type == "debit" and transaction.amount_hp > 0.5:
+                automation_trigger = AutomationTrigger(
+                    user_id=transaction.user_id,
+                    event_type="transaction_analysis",
+                    event_data=new_transaction.dict(),
+                    automation_type="ai_processing"
+                )
+                await AutomationService.execute_automation(automation_trigger)
+            
+        except Exception as e:
+            logger.error(f"Failed to trigger transaction automations: {e}")
+        
         return new_transaction
     
     @staticmethod
