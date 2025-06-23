@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 
 # Import route modules
-from .routes import users, wallet, travel, recharge, ecommerce, dashboard
+from .routes import users, wallet, travel, recharge, ecommerce, dashboard, automation
 from .routes import voice_advanced
 
 ROOT_DIR = Path(__file__).parent
