@@ -5,11 +5,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
-import uuid
-from datetime import datetime
 
+# Import route modules
+from .routes import users, wallet, travel, recharge, ecommerce, dashboard
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -17,42 +15,46 @@ load_dotenv(ROOT_DIR / '.env')
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ.get('DB_NAME', 'axzora_mrhappy')]
 
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(title="Axzora Mr. Happy 2.0 API", version="1.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Axzora Mr. Happy 2.0 API is running!", "status": "online"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    try:
+        # Test database connection
+        await client.admin.command('ping')
+        return {
+            "status": "healthy",
+            "database": "connected",
+            "message": "All systems operational"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "database": "disconnected",
+            "error": str(e)
+        }
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
+# Include all route modules
+app.include_router(users.router)
+app.include_router(wallet.router)
+app.include_router(travel.router)
+app.include_router(recharge.router)
+app.include_router(ecommerce.router)
+app.include_router(dashboard.router)
 
-# Include the router in the main app
+# Include the main API router
 app.include_router(api_router)
 
 app.add_middleware(
@@ -70,6 +72,59 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize application on startup"""
+    logger.info("Axzora Mr. Happy 2.0 API starting up...")
+    
+    # Initialize sample data if needed
+    await initialize_sample_data()
+    
+    logger.info("Startup complete!")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    """Close database connections on shutdown"""
+    logger.info("Shutting down Axzora Mr. Happy 2.0 API...")
     client.close()
+
+async def initialize_sample_data():
+    """Initialize sample data for demo purposes"""
+    try:
+        # Create sample user if not exists
+        users_collection = db["users"]
+        sample_user = await users_collection.find_one({"email": "demo@axzora.com"})
+        
+        if not sample_user:
+            from .models.user import User
+            demo_user = User(
+                name="Demo User",
+                email="demo@axzora.com",
+                avatar="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+                location="Nagpur, India",
+                mobile_number="9876543210"
+            )
+            await users_collection.insert_one(demo_user.dict())
+            
+            # Create demo wallet with some balance
+            from .services.wallet_service import WalletService
+            from .models.wallet import WalletTransaction
+            
+            # Add initial balance
+            initial_transaction = WalletTransaction(
+                user_id=demo_user.id,
+                type="credit",
+                amount_hp=10.0,
+                description="Welcome bonus",
+                category="Bonus"
+            )
+            await WalletService.add_transaction(initial_transaction)
+            
+            logger.info("Sample data initialized")
+        
+    except Exception as e:
+        logger.error(f"Error initializing sample data: {e}")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
