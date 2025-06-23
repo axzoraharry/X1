@@ -141,11 +141,14 @@ backend:
     file: "/app/backend/routes/travel.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Flight and hotel search/booking with Happy Paisa payment integration, mock data provided for testing"
+      - working: true
+        agent: "testing"
+        comment: "Tested all travel API endpoints. Flight and hotel search, booking creation, retrieval, and cancellation are working correctly. Happy Paisa integration for payments is functioning properly with refunds on cancellation."
 
   - task: "Recharge Services API"
     implemented: true
