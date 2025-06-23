@@ -89,8 +89,11 @@ class WalletService:
             transaction.type
         )
         
-        # Trigger automation workflows
+        # Trigger automation workflows using lazy imports
         try:
+            # Lazy import to avoid circular dependency
+            from .notification_service import NotificationService
+            
             # Send transaction notification
             await NotificationService.send_transaction_notification(
                 user_id=transaction.user_id,
@@ -110,6 +113,10 @@ class WalletService:
             
             # Trigger AI analysis for spending insights (weekly)
             if transaction.type == "debit" and transaction.amount_hp > 0.5:
+                # Lazy import to avoid circular dependency
+                from ..models.automation import AutomationTrigger
+                from .automation_service import AutomationService
+                
                 automation_trigger = AutomationTrigger(
                     user_id=transaction.user_id,
                     event_type="transaction_analysis",
@@ -120,6 +127,7 @@ class WalletService:
             
         except Exception as e:
             logger.error(f"Failed to trigger transaction automations: {e}")
+            # Don't fail the transaction if automation fails
         
         return new_transaction
     
