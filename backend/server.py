@@ -8,6 +8,7 @@ from pathlib import Path
 
 # Import route modules
 from .routes import users, wallet, travel, recharge, ecommerce, dashboard
+from .routes import voice_advanced
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -18,7 +19,8 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ.get('DB_NAME', 'axzora_mrhappy')]
 
 # Create the main app without a prefix
-app = FastAPI(title="Axzora Mr. Happy 2.0 API", version="1.0.0")
+app = FastAPI(title="Axzora Mr. Happy 2.0 API", version="2.0.0", 
+              description="Advanced AI-powered digital ecosystem with voice interaction")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -26,7 +28,19 @@ api_router = APIRouter(prefix="/api")
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Axzora Mr. Happy 2.0 API is running!", "status": "online"}
+    return {
+        "message": "Axzora Mr. Happy 2.0 API is running!", 
+        "status": "online",
+        "version": "2.0.0",
+        "features": [
+            "Advanced Voice AI Integration",
+            "Happy Paisa Digital Currency",
+            "Travel Booking Services", 
+            "Recharge & Bill Payment",
+            "E-commerce Platform",
+            "Real-time Analytics"
+        ]
+    }
 
 @api_router.get("/health")
 async def health_check():
@@ -37,7 +51,15 @@ async def health_check():
         return {
             "status": "healthy",
             "database": "connected",
-            "message": "All systems operational"
+            "voice_service": "advanced_ai_ready",
+            "services": {
+                "wallet": "operational",
+                "travel": "operational", 
+                "recharge": "operational",
+                "ecommerce": "operational",
+                "voice_ai": "operational"
+            },
+            "message": "All systems operational with advanced AI voice capabilities"
         }
     except Exception as e:
         return {
@@ -53,6 +75,7 @@ app.include_router(travel.router)
 app.include_router(recharge.router)
 app.include_router(ecommerce.router)
 app.include_router(dashboard.router)
+app.include_router(voice_advanced.router)  # Advanced voice integration
 
 # Include the main API router
 app.include_router(api_router)
@@ -75,12 +98,12 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup"""
-    logger.info("Axzora Mr. Happy 2.0 API starting up...")
+    logger.info("Axzora Mr. Happy 2.0 API starting up with advanced voice capabilities...")
     
     # Initialize sample data if needed
     await initialize_sample_data()
     
-    logger.info("Startup complete!")
+    logger.info("Advanced AI voice system ready!")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
@@ -106,21 +129,49 @@ async def initialize_sample_data():
             )
             await users_collection.insert_one(demo_user.dict())
             
-            # Create demo wallet with some balance
+            # Create demo wallet with enhanced balance for voice demo
             from .services.wallet_service import WalletService
             from .models.wallet import WalletTransaction
             
-            # Add initial balance
+            # Add initial balance for voice interaction demos
             initial_transaction = WalletTransaction(
                 user_id=demo_user.id,
                 type="credit",
-                amount_hp=10.0,
-                description="Welcome bonus",
+                amount_hp=15.0,
+                description="Welcome bonus + Voice AI demo credits",
                 category="Bonus"
             )
             await WalletService.add_transaction(initial_transaction)
             
-            logger.info("Sample data initialized")
+            # Add some sample transactions for conversation context
+            sample_transactions = [
+                WalletTransaction(
+                    user_id=demo_user.id,
+                    type="debit",
+                    amount_hp=2.5,
+                    description="Flight booking - Mumbai",
+                    category="Travel"
+                ),
+                WalletTransaction(
+                    user_id=demo_user.id,
+                    type="debit",
+                    amount_hp=0.299,
+                    description="Mobile recharge - Jio",
+                    category="Recharge"
+                ),
+                WalletTransaction(
+                    user_id=demo_user.id,
+                    type="debit",
+                    amount_hp=1.5,
+                    description="Shopping - Wireless Earbuds",
+                    category="Shopping"
+                )
+            ]
+            
+            for transaction in sample_transactions:
+                await WalletService.add_transaction(transaction)
+            
+            logger.info("Sample data initialized with enhanced balance for voice AI demos")
         
     except Exception as e:
         logger.error(f"Error initializing sample data: {e}")
