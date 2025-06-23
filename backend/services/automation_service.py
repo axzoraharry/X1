@@ -110,7 +110,8 @@ class AutomationService:
         Execute AI processing workflows (OpenAI data processing)
         """
         try:
-            # Get user's transaction history for context
+            # Get user's transaction history for context using lazy import
+            from .wallet_service import WalletService
             transactions = await WalletService.get_transactions(trigger.user_id, limit=20)
             
             # Prepare data for AI analysis
