@@ -21,7 +21,7 @@ import { Input } from '../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { mockHappyPaisaWallet } from '../data/mockData';
 
-const Wallet = () => {
+const WalletPage = () => {
   const [amount, setAmount] = useState('');
   const [conversionType, setConversionType] = useState('inr-to-hp');
 
