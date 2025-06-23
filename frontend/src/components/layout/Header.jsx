@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Search, Mic, MicOff, User, Wallet } from 'lucide-react';
+import { Bell, Search, Mic, MicOff, User, Wallet, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
@@ -12,22 +12,53 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from '../ui/dropdown-menu';
-import { mockUser, mockNotifications, mockHappyPaisaWallet } from '../../data/mockData';
+import { useUser } from '../../contexts/UserContext';
+import { useApi } from '../../hooks/useApi';
+import { walletService } from '../../services/walletService';
+import { dashboardService } from '../../services/dashboardService';
 
 const Header = ({ onVoiceToggle, isListening = false }) => {
+  const { user, loading: userLoading } = useUser();
   const [searchQuery, setSearchQuery] = useState('');
-  const unreadCount = mockNotifications.filter(n => !n.read).length;
+
+  // Fetch wallet balance for header display
+  const { data: walletData } = useApi(
+    () => user ? walletService.getWalletBalance(user.id) : Promise.resolve(null),
+    [user?.id]
+  );
+
+  // Fetch notifications
+  const { data: notificationsData } = useApi(
+    () => user ? dashboardService.getNotifications(user.id, 5) : Promise.resolve({ notifications: [] }),
+    [user?.id]
+  );
+
+  const notifications = notificationsData?.notifications || [];
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       console.log('Searching for:', searchQuery);
-      // Simulate voice interaction
+      // Simulate voice interaction with real user data
       setTimeout(() => {
-        alert(`Mr. Happy: I found some results for "${searchQuery}". How can I help you with that?`);
+        alert(`Mr. Happy: I found some results for "${searchQuery}". ${user ? `${user.name}, h` : 'H'}ow can I help you with that?`);
       }, 500);
     }
   };
+
+  if (userLoading) {
+    return (
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container flex h-16 items-center justify-center px-4">
+          <div className="flex items-center space-x-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading Axzora...</span>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -52,7 +83,7 @@ const Header = ({ onVoiceToggle, isListening = false }) => {
           <form onSubmit={handleSearch} className="relative">
             <Input
               type="text"
-              placeholder="Ask Mr. Happy anything..."
+              placeholder={user ? `Ask Mr. Happy anything, ${user.name}...` : "Ask Mr. Happy anything..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pr-20 pl-10 h-10 rounded-full border-2 border-muted hover:border-blue-300 focus:border-blue-500 transition-all duration-300"
@@ -82,12 +113,18 @@ const Header = ({ onVoiceToggle, isListening = false }) => {
           {/* Happy Paisa Balance */}
           <div className="hidden md:flex items-center space-x-2 bg-gradient-to-r from-yellow-50 to-yellow-100 px-3 py-1.5 rounded-full border border-yellow-200">
             <Wallet className="h-4 w-4 text-yellow-600" />
-            <span className="text-sm font-semibold text-yellow-800">
-              {mockHappyPaisaWallet.balance_hp} HP
-            </span>
-            <span className="text-xs text-yellow-600">
-              (₹{mockHappyPaisaWallet.balance_inr_equiv.toLocaleString()})
-            </span>
+            {walletData ? (
+              <>
+                <span className="text-sm font-semibold text-yellow-800">
+                  {walletData.balance_hp} HP
+                </span>
+                <span className="text-xs text-yellow-600">
+                  (₹{walletData.balance_inr_equiv?.toLocaleString()})
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-yellow-600">Loading...</span>
+            )}
           </div>
 
           {/* Notifications */}
@@ -108,7 +145,7 @@ const Header = ({ onVoiceToggle, isListening = false }) => {
             <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {mockNotifications.slice(0, 3).map((notif) => (
+              {notifications.slice(0, 3).map((notif) => (
                 <DropdownMenuItem key={notif.id} className="flex flex-col items-start p-3">
                   <div className="flex items-center justify-between w-full">
                     <span className="font-medium text-sm">{notif.title}</span>
@@ -127,40 +164,43 @@ const Header = ({ onVoiceToggle, isListening = false }) => {
           </DropdownMenu>
 
           {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
-                  <AvatarFallback>{mockUser.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{mockUser.name}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{mockUser.email}</p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Wallet className="mr-2 h-4 w-4" />
-                <span>Happy Paisa Wallet</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <span>Sign out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback>{user.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-xs leading-none text-green-600">✓ Live Connected</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Wallet className="mr-2 h-4 w-4" />
+                  <span>Happy Paisa Wallet</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
     </header>
