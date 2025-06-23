@@ -9,8 +9,17 @@ from ..models.user import User
 from ..models.wallet import HappyPaisaTransaction
 from .database import get_collection
 from .wallet_service import WalletService
+from bson import ObjectId
 
 logger = logging.getLogger(__name__)
+
+def json_serializer(obj):
+    """Custom JSON serializer for datetime and ObjectId objects"""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, ObjectId):
+        return str(obj)
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
 class AutomationService:
     """Service for handling n8n workflow automation integrations"""
