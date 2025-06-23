@@ -126,11 +126,14 @@ backend:
     file: "/app/backend/routes/wallet.py, /app/backend/services/wallet_service.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented complete wallet with transactions, balance tracking, currency conversion (1 HP = ₹1000), demo user has 10 HP balance"
+      - working: true
+        agent: "testing"
+        comment: "Tested all wallet endpoints. Balance retrieval, credit/debit transactions, and currency conversion (INR to HP and HP to INR) are working correctly. Transaction history is properly maintained."
 
   - task: "Travel Booking API"
     implemented: true
