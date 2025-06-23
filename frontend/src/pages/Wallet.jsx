@@ -122,7 +122,7 @@ const Wallet = () => {
         <Card className="md:col-span-2 bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Wallet className="h-6 w-6 text-yellow-600" />
+              <WalletIcon className="h-6 w-6 text-yellow-600" />
               <span>Current Balance</span>
             </CardTitle>
           </CardHeader>
