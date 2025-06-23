@@ -312,12 +312,14 @@ class AutomationService:
             backup_data["user_profile"] = user_data
         
         if backup_type in ["full", "transactions"]:
-            # Get transaction history
+            # Get transaction history using lazy import
+            from .wallet_service import WalletService
             transactions = await WalletService.get_transactions(user_id, limit=1000)
             backup_data["transactions"] = [tx.dict() for tx in transactions]
         
         if backup_type == "full":
-            # Get wallet balance
+            # Get wallet balance using lazy import
+            from .wallet_service import WalletService
             wallet_balance = await WalletService.get_balance(user_id)
             backup_data["wallet_balance"] = wallet_balance.dict()
         
