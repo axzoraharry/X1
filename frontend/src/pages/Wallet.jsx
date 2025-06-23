@@ -112,7 +112,7 @@ const Wallet = () => {
           <p className="text-muted-foreground">Your digital currency ecosystem</p>
         </div>
         <div className="flex items-center space-x-2 bg-gradient-to-r from-yellow-50 to-yellow-100 px-4 py-2 rounded-lg">
-          <Wallet className="h-5 w-5 text-yellow-600" />
+          <WalletIcon className="h-5 w-5 text-yellow-600" />
           <span className="text-sm font-medium">1 HP = ₹1,000</span>
         </div>
       </div>
