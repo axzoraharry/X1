@@ -210,6 +210,21 @@ backend:
         agent: "testing"
         comment: "Tested database models and services through API endpoints. All models are correctly defined and the database service layer is functioning properly. Data persistence is working as expected across all services."
 
+  - task: "n8n Automation Integration"
+    implemented: true
+    working: false
+    file: "/app/backend/routes/automation.py, /app/backend/services/automation_service.py, /app/backend/services/notification_service.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented n8n automation integration with endpoints for health check, notifications, AI processing, data backup, and automation history"
+      - working: false
+        agent: "testing"
+        comment: "Found critical issue: circular import dependency between automation_service.py, wallet_service.py, and notification_service.py. This prevents the backend from starting properly and causes all automation endpoints to return 502 errors. The circular dependency needs to be resolved for the automation features to work."
+
 frontend:
   - task: "API Integration Services"
     implemented: true
