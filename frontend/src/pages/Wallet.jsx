@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Wallet, 
+  Wallet as WalletIcon, 
   TrendingUp, 
   TrendingDown, 
   Plus, 
