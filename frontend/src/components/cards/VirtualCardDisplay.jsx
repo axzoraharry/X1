@@ -4,7 +4,7 @@ import {
   Eye, 
   EyeOff, 
   Copy, 
-  Freeze, 
+  Snowflake, 
   Play, 
   CreditCard,
   Shield,
