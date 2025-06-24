@@ -32,10 +32,16 @@ class WalletTransaction(BaseModel):
     reference_id: Optional[str] = None
 
 class WalletBalance(BaseModel):
-    balance_hp: float
-    balance_inr_equiv: float
-    recent_transactions: List[HappyPaisaTransaction]
-    spending_breakdown: Dict[str, float]
+    user_id: str
+    balance_hp: float = Field(description="Happy Paisa balance")
+    balance_inr_equiv: float = Field(description="INR equivalent (1 HP = 1000 INR)")
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    spending_breakdown: Dict[str, float] = Field(default_factory=dict)
+    recent_transactions: List[Dict[str, Any]] = Field(default_factory=list)
+    
+    # Blockchain-specific fields
+    blockchain_address: Optional[str] = Field(default="", description="User's blockchain address")
+    network: Optional[str] = Field(default="happy-paisa-mainnet", description="Blockchain network")
 
 class TransactionCreate(BaseModel):
     user_id: str
