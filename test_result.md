@@ -262,6 +262,18 @@ backend:
         comment: "Fixed both issues by: 1) Implementing a mock Firebase implementation that bypasses the need for valid API keys, and 2) Making the useLocation hook safely handle cases where it's not in a Router context. After these fixes, the application loads successfully and all navigation between pages works correctly. There are still some non-critical console warnings related to analytics tracking, but they don't affect the core functionality of the application."
 
 frontend:
+  - task: "Virtual Cards Functionality"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/cards/VirtualCardDisplay.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "Found a critical error in VirtualCardDisplay.jsx: 'Freeze' icon is not found in 'lucide-react' library. The application shows a compilation error screen instead of loading properly. The error is at line 450:44-50 in VirtualCardDisplay.jsx."
+
   - task: "API Integration Services"
     implemented: true
     working: true
