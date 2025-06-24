@@ -103,7 +103,8 @@ class TransactionAuthorizationService:
             # Check card balance (if using prepaid model)
             if card.current_balance_inr < request.amount_inr:
                 # Try to auto-load from Happy Paisa wallet
-                user_hp_balance = await WalletService.get_balance(card.user_id)
+                user_hp_balance_obj = await WalletService.get_balance(card.user_id)
+                user_hp_balance = user_hp_balance_obj.balance_hp
                 if user_hp_balance >= amount_hp:
                     # Auto-load from wallet
                     await TransactionAuthorizationService._auto_load_from_wallet(
