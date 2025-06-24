@@ -442,7 +442,20 @@ class AutomationService:
                 {"user_id": user_id}
             ).sort("timestamp", -1).limit(50).to_list(50)
             
-            return records
+            # Convert ObjectId to string for JSON serialization
+            serialized_records = []
+            for record in records:
+                if "_id" in record:
+                    record["_id"] = str(record["_id"])
+                # Convert any datetime objects to ISO strings
+                for key, value in record.items():
+                    if isinstance(value, datetime):
+                        record[key] = value.isoformat()
+                    elif isinstance(value, ObjectId):
+                        record[key] = str(value)
+                serialized_records.append(record)
+            
+            return serialized_records
             
         except Exception as e:
             logger.error(f"Failed to get user automations: {e}")
