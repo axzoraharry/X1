@@ -1,5 +1,72 @@
 import api from './api';
 
+export const walletService = {
+  // Wallet Management
+  async getWalletBalance(userId) {
+    try {
+      const response = await api.get(`/api/wallet/${userId}/balance`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to get wallet balance: ${error.message}`);
+    }
+  },
+
+  async getTransactions(userId, limit = 20) {
+    try {
+      const response = await api.get(`/api/wallet/${userId}/transactions?limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to get transactions: ${error.message}`);
+    }
+  },
+
+  async creditWallet(userId, amountHp, description = 'Manual credit') {
+    try {
+      const response = await api.post(`/api/wallet/${userId}/credit`, {
+        amount_hp: amountHp,
+        description
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to credit wallet: ${error.message}`);
+    }
+  },
+
+  async debitWallet(userId, amountHp, description = 'Manual debit') {
+    try {
+      const response = await api.post(`/api/wallet/${userId}/debit`, {
+        amount_hp: amountHp,
+        description
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to debit wallet: ${error.message}`);
+    }
+  },
+
+  async convertInrToHp(userId, amountInr) {
+    try {
+      const response = await api.post(`/api/wallet/${userId}/convert-inr-to-hp`, {
+        amount_inr: amountInr
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to convert INR to HP: ${error.message}`);
+    }
+  },
+
+  async convertHpToInr(userId, amountHp) {
+    try {
+      const response = await api.post(`/api/wallet/${userId}/convert-hp-to-inr`, {
+        amount_hp: amountHp
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(`Failed to convert HP to INR: ${error.message}`);
+    }
+  }
+};
+
 export const blockchainService = {
   // Network Status
   async getNetworkStatus() {
