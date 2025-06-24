@@ -8,12 +8,22 @@ router = APIRouter(prefix="/api/wallet", tags=["wallet"])
 
 @router.get("/{user_id}/balance", response_model=WalletBalance)
 async def get_wallet_balance(user_id: str):
-    """Get user's wallet balance and recent activity"""
+    """Get user's Happy Paisa balance from blockchain"""
     try:
-        balance = await WalletService.get_balance(user_id)
-        return balance
+        # Use blockchain wallet service for balance
+        balance = await BlockchainWalletService.get_balance(user_id)
+        return {
+            "user_id": user_id,
+            "balance_hp": balance.balance_hp,
+            "balance_inr_equiv": balance.balance_inr_equiv,
+            "blockchain_address": balance.blockchain_address,
+            "network": balance.network,
+            "last_updated": balance.last_updated.isoformat(),
+            "spending_breakdown": balance.spending_breakdown,
+            "recent_transactions": balance.recent_transactions[:5]  # Latest 5 for quick view
+        }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get wallet balance: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get balance: {str(e)}")
 
 @router.post("/{user_id}/transactions", response_model=HappyPaisaTransaction)
 async def add_transaction(user_id: str, transaction: TransactionCreate):
