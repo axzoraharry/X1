@@ -291,13 +291,13 @@ async def analytics_health_check():
     """Check analytics service health"""
     try:
         # Test database connection
-        db_status = "connected" if analytics_service.analytics_collection else "disconnected"
+        db_status = "connected" if analytics_service.analytics_collection is not None else "disconnected"
         
         # Test GA4 connection
-        ga4_status = "configured" if analytics_service.ga4_client else "demo_mode"
+        ga4_status = "configured" if analytics_service.ga4_client is not None else "demo_mode"
         
         # Test Firebase connection
-        firebase_status = "connected" if analytics_service.firebase_app else "demo_mode"
+        firebase_status = "connected" if analytics_service.firebase_app is not None else "demo_mode"
         
         return {
             "status": "healthy",
