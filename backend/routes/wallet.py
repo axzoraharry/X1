@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from typing import List
 from ..models.wallet import WalletBalance, WalletTransaction, HappyPaisaTransaction, TransactionCreate
 from ..services.wallet_service import WalletService
+from ..services.blockchain_wallet_service import BlockchainWalletService
 
 router = APIRouter(prefix="/api/wallet", tags=["wallet"])
 
