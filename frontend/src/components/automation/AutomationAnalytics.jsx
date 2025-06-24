@@ -187,44 +187,16 @@ const AutomationAnalytics = ({ userId }) => {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Performance Metrics</h3>
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <span>Response Time (s)</span>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+          {analytics.performance_metrics.map((metric, index) => (
+            <div key={index} className="text-center">
+              <p className="text-sm text-gray-600">{metric.time}</p>
+              <p className="text-lg font-semibold text-blue-600">{metric.response_time}s</p>
+              <p className="text-xs text-green-600">{metric.success_rate}%</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span>Success Rate (%)</span>
-            </div>
-          </div>
+          ))}
         </div>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={analytics.performance_metrics}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
-            <YAxis yAxisId="left" />
-            <YAxis yAxisId="right" orientation="right" />
-            <Tooltip />
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="response_time"
-              stroke="#3B82F6"
-              strokeWidth={2}
-              dot={{ fill: '#3B82F6' }}
-            />
-            <Line
-              yAxisId="right"
-              type="monotone"
-              dataKey="success_rate"
-              stroke="#10B981"
-              strokeWidth={2}
-              dot={{ fill: '#10B981' }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
       </motion.div>
 
       {/* Recent Trends */}
