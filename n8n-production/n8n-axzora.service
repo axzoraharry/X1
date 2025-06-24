@@ -1,0 +1,15 @@
+[Unit]
+Description=n8n workflow automation for Axzora
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/app/n8n-production
+Environment=NODE_ENV=production
+ExecStart=/app/n8n-production/start_n8n.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
