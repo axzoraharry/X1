@@ -8,11 +8,12 @@ import json
 import asyncio
 from datetime import datetime
 from typing import Dict, List, Optional, Any
-from pyga4 import GA4
+# Removed pyga4 import as it's not compatible
 import firebase_admin
 from firebase_admin import credentials, analytics
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +38,11 @@ class AnalyticsService:
             api_secret = os.getenv('GA_API_SECRET', 'demo-api-secret')
             
             if measurement_id != 'G-DEMO123456' and api_secret != 'demo-api-secret':
-                self.ga4_client = GA4(
-                    measurement_id=measurement_id,
-                    api_secret=api_secret
-                )
+                # Using direct API calls instead of pyga4 library
+                self.ga4_client = {
+                    "measurement_id": measurement_id,
+                    "api_secret": api_secret
+                }
                 logger.info("GA4 client initialized successfully")
             else:
                 logger.warning("Using demo GA4 credentials - replace with actual keys")
