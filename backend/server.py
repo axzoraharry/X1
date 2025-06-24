@@ -135,6 +135,14 @@ async def initialize_sample_data():
             )
             await users_collection.insert_one(demo_user.dict())
             
+            # Create demo KYC for virtual card eligibility
+            from .services.kyc_service import KYCService
+            try:
+                await KYCService.create_demo_kyc_for_user(demo_user.id, demo_user.name)
+                logger.info("Demo KYC created and approved for virtual card eligibility")
+            except Exception as e:
+                logger.warning(f"Could not create demo KYC: {e}")
+            
             # Create demo wallet with enhanced balance for voice demo
             from .services.wallet_service import WalletService
             from .models.wallet import WalletTransaction
@@ -177,7 +185,7 @@ async def initialize_sample_data():
             for transaction in sample_transactions:
                 await WalletService.add_transaction(transaction)
             
-            logger.info("Sample data initialized with enhanced balance for voice AI demos")
+            logger.info("Sample data initialized with enhanced balance for voice AI demos and virtual card support")
         
     except Exception as e:
         logger.error(f"Error initializing sample data: {e}")
