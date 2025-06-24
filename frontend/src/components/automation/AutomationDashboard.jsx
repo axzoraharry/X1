@@ -209,7 +209,7 @@ const AutomationDashboard = ({ userId }) => {
           >
             Backup Now
           </button>
-        </div>
+        </motion.div>
       </div>
 
       {/* Automation History */}
