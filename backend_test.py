@@ -839,7 +839,7 @@ def test_virtual_cards_blockchain_integration(user_id):
             "card_id": card_id,
             "amount_inr": 100.0,  # 0.1 HP
             "merchant_name": "Test Merchant",
-            "merchant_category": "retail",
+            "merchant_category": "online_shopping",  # Using a valid category from the enum
             "description": "Test purchase"
         }
         simulate_response = requests.post(
