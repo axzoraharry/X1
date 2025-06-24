@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime
 
 # Get the backend URL from frontend/.env
-BACKEND_URL = "https://83d0d702-1cb4-4aa6-aecf-c0ffe0eead99.preview.emergentagent.com/api"
+BACKEND_URL = "https://91f0f1ff-fbc5-4d50-a572-45e7123be9d8.preview.emergentagent.com/api"
 
 # Test results
 test_results = {
