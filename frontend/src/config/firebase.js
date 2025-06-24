@@ -183,7 +183,13 @@ export const trackUserId = (userId) => {
 export const createPerformanceTrace = (traceName) => {
   if (performance) {
     try {
-      return trace(performance, traceName);
+      if (typeof performance.trace === 'function') {
+        // Real Firebase performance
+        return trace(performance, traceName);
+      } else {
+        // Mock performance
+        return performance.trace(traceName);
+      }
     } catch (error) {
       console.warn("Performance trace creation failed:", error);
       return null;
