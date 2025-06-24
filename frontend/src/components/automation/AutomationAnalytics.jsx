@@ -39,47 +39,25 @@ const AutomationAnalytics = ({ userId }) => {
     try {
       setLoading(true);
       
-      // Simulate analytics data - in real app, this would come from your backend
-      const mockAnalytics = {
+      // Get real analytics data from the backend
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/analytics/dashboard/${userId}?time_range=${timeRange}`);
+      const analyticsData = await response.json();
+      
+      // Transform the data for display
+      const transformedAnalytics = {
         overview: {
-          total_automations: 347,
-          successful_rate: 94.2,
-          avg_response_time: 1.3,
-          active_rules: 12
+          total_automations: analyticsData.overview?.total_automations || 0,
+          successful_rate: analyticsData.overview?.success_rate || 0,
+          avg_response_time: analyticsData.overview?.avg_response_time || 0,
+          active_rules: 4 // Mock value
         },
-        daily_stats: [
-          { date: '2024-06-18', automations: 45, success: 42, failed: 3 },
-          { date: '2024-06-19', automations: 52, success: 50, failed: 2 },
-          { date: '2024-06-20', automations: 38, success: 36, failed: 2 },
-          { date: '2024-06-21', automations: 61, success: 58, failed: 3 },
-          { date: '2024-06-22', automations: 43, success: 41, failed: 2 },
-          { date: '2024-06-23', automations: 56, success: 53, failed: 3 },
-          { date: '2024-06-24', automations: 52, success: 47, failed: 5 }
-        ],
-        automation_types: [
-          { name: 'Transaction Notifications', value: 45, color: '#3B82F6' },
-          { name: 'AI Insights', value: 20, color: '#8B5CF6' },
-          { name: 'Data Backup', value: 15, color: '#10B981' },
-          { name: 'Low Balance Alerts', value: 12, color: '#F59E0B' },
-          { name: 'Booking Confirmations', value: 8, color: '#EF4444' }
-        ],
-        performance_metrics: [
-          { time: '00:00', response_time: 1.2, success_rate: 95 },
-          { time: '04:00', response_time: 0.9, success_rate: 97 },
-          { time: '08:00', response_time: 1.8, success_rate: 92 },
-          { time: '12:00', response_time: 2.1, success_rate: 89 },
-          { time: '16:00', response_time: 1.5, success_rate: 94 },
-          { time: '20:00', response_time: 1.3, success_rate: 96 }
-        ],
-        recent_trends: [
-          { week: 'Week 1', notifications: 234, ai_insights: 45, backups: 28 },
-          { week: 'Week 2', notifications: 267, ai_insights: 52, backups: 31 },
-          { week: 'Week 3', notifications: 298, ai_insights: 61, backups: 35 },
-          { week: 'Week 4', notifications: 347, ai_insights: 73, backups: 42 }
-        ]
+        daily_stats: analyticsData.daily_stats || [],
+        automation_types: analyticsData.automation_types || [],
+        performance_metrics: analyticsData.performance_metrics || [],
+        recent_trends: analyticsData.trends || []
       };
       
-      setAnalytics(mockAnalytics);
+      setAnalytics(transformedAnalytics);
     } catch (error) {
       console.error('Failed to load analytics:', error);
     } finally {
