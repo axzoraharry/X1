@@ -10,7 +10,8 @@ import {
   GitBranch,
   Cloud,
   Activity,
-  CreditCard
+  CreditCard,
+  Cog8ToothIcon
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
