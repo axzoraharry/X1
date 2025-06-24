@@ -51,9 +51,12 @@ class AnalyticsService:
             # Firebase Admin SDK initialization
             service_account_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH')
             if service_account_path and os.path.exists(service_account_path):
-                cred = credentials.Certificate(service_account_path)
-                self.firebase_app = firebase_admin.initialize_app(cred)
-                logger.info("Firebase Admin SDK initialized successfully")
+                try:
+                    cred = credentials.Certificate(service_account_path)
+                    self.firebase_app = firebase_admin.initialize_app(cred)
+                    logger.info("Firebase Admin SDK initialized successfully")
+                except Exception as e:
+                    logger.warning(f"Firebase initialization error: {e} - using demo mode")
             else:
                 logger.warning("Firebase service account not found - using demo mode")
             
