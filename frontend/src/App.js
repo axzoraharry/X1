@@ -48,6 +48,7 @@ const App = () => {
                     <Route path="/recharge" element={<Recharge />} />
                     <Route path="/shop" element={<ShopUpdated />} />
                     <Route path="/wallet" element={<WalletUpdated />} />
+                    <Route path="/virtual-cards" element={<VirtualCards />} />
                     <Route path="/automation" element={<AutomationHub userId="43f08807-ea8e-4f96-ab9b-4b529b4b7475" />} />
                     <Route path="/git" element={<div className="p-6"><h1 className="text-2xl font-bold">Git Activity Coming Soon</h1></div>} />
                     <Route path="/weather" element={<div className="p-6"><h1 className="text-2xl font-bold">Weather Details Coming Soon</h1></div>} />
