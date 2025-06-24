@@ -7,6 +7,132 @@ from ..services.blockchain_wallet_service import BlockchainWalletService
 
 router = APIRouter(prefix="/api/wallet", tags=["wallet"])
 
+@router.get("/health")
+async def wallet_health():
+    """Wallet service health check with blockchain status"""
+    try:
+        from ..services.blockchain_gateway_service import blockchain_gateway
+        
+        # Check blockchain connectivity
+        chain_status = await blockchain_gateway.get_chain_status()
+        
+        return {
+            "status": "healthy",
+            "service": "blockchain_wallet",
+            "database": "connected",
+            "blockchain": {
+                "status": chain_status["status"],
+                "network": chain_status["network"],
+                "latest_block": chain_status["chain_info"]["currentBlock"]
+            },
+            "features": {
+                "blockchain_integration": "operational",
+                "p2p_transfers": "operational",
+                "mint_burn": "operational",
+                "balance_sync": "operational"
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "degraded",
+            "service": "blockchain_wallet",
+            "error": str(e)
+        }
+
+# New blockchain-specific endpoints
+@router.post("/p2p-transfer")
+async def peer_to_peer_transfer(
+    from_user_id: str = Query(...),
+    to_user_id: str = Query(...),
+    amount_hp: float = Query(..., gt=0),
+    description: str = Query(default="P2P Transfer")
+):
+    """Transfer Happy Paisa between users via blockchain"""
+    try:
+        tx_hash = await BlockchainWalletService.transfer_to_user(
+            from_user_id, to_user_id, amount_hp, description
+        )
+        
+        return {
+            "success": True,
+            "message": f"Transferred {amount_hp} HP from {from_user_id} to {to_user_id}",
+            "blockchain_hash": tx_hash,
+            "amount_hp": amount_hp,
+            "from_user": from_user_id,
+            "to_user": to_user_id,
+            "network": "happy-paisa-mainnet"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"P2P transfer failed: {str(e)}")
+
+@router.get("/{user_id}/blockchain-address")
+async def get_user_blockchain_address(user_id: str):
+    """Get user's blockchain address"""
+    try:
+        from ..services.blockchain_gateway_service import blockchain_gateway
+        
+        address = await blockchain_gateway.get_or_create_user_address(user_id)
+        return {
+            "user_id": user_id,
+            "address": address.address,
+            "public_key": address.public_key,
+            "network": address.network,
+            "address_format": "Substrate/Polkadot format"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get blockchain address: {str(e)}")
+
+@router.get("/{user_id}/blockchain-transactions")
+async def get_blockchain_transactions(
+    user_id: str,
+    limit: int = Query(default=50, le=100)
+):
+    """Get user's complete blockchain transaction history"""
+    try:
+        transactions = await BlockchainWalletService.get_blockchain_transactions(user_id, limit)
+        
+        return {
+            "user_id": user_id,
+            "transactions": transactions,
+            "count": len(transactions),
+            "network": "happy-paisa-mainnet",
+            "note": "These are on-chain transactions with full immutability"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get blockchain transactions: {str(e)}")
+
+@router.post("/{user_id}/sync-blockchain")
+async def sync_user_blockchain_state(user_id: str):
+    """Sync user's local wallet state with blockchain"""
+    try:
+        sync_result = await BlockchainWalletService.sync_blockchain_state(user_id)
+        
+        return {
+            "success": True,
+            "message": "Blockchain state synchronized",
+            "sync_result": sync_result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Blockchain sync failed: {str(e)}")
+
+@router.get("/{user_id}/analytics")
+async def get_wallet_analytics(
+    user_id: str,
+    days: int = Query(default=30, le=365)
+):
+    """Get comprehensive wallet analytics with blockchain insights"""
+    try:
+        analytics = await BlockchainWalletService.get_wallet_analytics(user_id, days)
+        
+        return {
+            "user_id": user_id,
+            "period_days": days,
+            "analytics": analytics,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get wallet analytics: {str(e)}")
+
 @router.post("/transactions")
 async def add_transaction(transaction_data: dict):
     """Add a wallet transaction via blockchain"""
