@@ -246,7 +246,7 @@ const VirtualCardDisplay = ({
           >
             {card.card_status === 'active' ? (
               <>
-                <Freeze className="w-4 h-4 mr-1" />
+                <Snowflake className="w-4 h-4 mr-1" />
                 {isUpdating ? 'Freezing...' : 'Freeze Card'}
               </>
             ) : (
