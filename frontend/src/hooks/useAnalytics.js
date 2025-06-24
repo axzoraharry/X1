@@ -4,7 +4,6 @@
  */
 
 import { useEffect, useCallback, useContext } from 'react';
-import { useLocation } from 'react-router-dom';
 import { AxzoraAnalytics, trackEvent, trackUserId, trackUserProperties, createPerformanceTrace } from '../config/firebase';
 import { UserContext } from '../contexts/UserContext';
 import axios from 'axios';
@@ -12,7 +11,21 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
 export const useAnalytics = () => {
-  const location = useLocation();
+  // Check if we're in a Router context
+  let location = null;
+  let inRouterContext = false;
+  
+  try {
+    // Try to import useLocation from react-router-dom
+    const { useLocation } = require('react-router-dom');
+    location = useLocation();
+    inRouterContext = true;
+  } catch (error) {
+    console.warn("Not in Router context, location tracking disabled");
+    // Create a mock location object
+    location = { pathname: '/' };
+  }
+  
   const { user } = useContext(UserContext);
 
   // Initialize user tracking when user changes
@@ -30,18 +43,20 @@ export const useAnalytics = () => {
 
   // Track page views
   useEffect(() => {
-    const pageName = location.pathname.replace('/', '') || 'home';
-    AxzoraAnalytics.trackPageView(pageName);
-    
-    // Also send to backend
-    if (user?.id) {
-      trackBackendEvent('page_view', {
-        page_name: pageName,
-        page_path: location.pathname,
-        user_id: user.id
-      });
+    if (inRouterContext) {
+      const pageName = location.pathname.replace('/', '') || 'home';
+      AxzoraAnalytics.trackPageView(pageName);
+      
+      // Also send to backend
+      if (user?.id) {
+        trackBackendEvent('page_view', {
+          page_name: pageName,
+          page_path: location.pathname,
+          user_id: user.id
+        });
+      }
     }
-  }, [location, user]);
+  }, [location, user, inRouterContext]);
 
   // Backend event tracking
   const trackBackendEvent = useCallback(async (eventName, parameters = {}) => {
