@@ -512,17 +512,21 @@ def test_p2p_transfer(from_user_id, to_user_id=None):
             user_response = requests.post(f"{BACKEND_URL}/users/", json=new_user_data)
             if user_response.status_code == 200:
                 to_user_id = user_response.json()["id"]
+                print(f"Created recipient user with ID: {to_user_id}")
             else:
                 log_test("P2P Transfer - Create Recipient User", False, user_response)
                 return False
         
         # Transfer a small amount
         amount_hp = 0.1
-        response = requests.post(
-            f"{BACKEND_URL}/blockchain/transfer?from_user_id={from_user_id}&to_user_id={to_user_id}&amount_hp={amount_hp}&description=Test P2P Transfer"
-        )
+        transfer_url = f"{BACKEND_URL}/blockchain/transfer?from_user_id={from_user_id}&to_user_id={to_user_id}&amount_hp={amount_hp}&description=Test P2P Transfer"
+        print(f"Making P2P transfer request to: {transfer_url}")
         
-        if response.status_code == 200 and response.json().get("success") == True:
+        response = requests.post(transfer_url)
+        
+        print(f"P2P Transfer Response: {response.status_code} - {response.text}")
+        
+        if response.status_code == 200 and "success" in response.json() and response.json().get("success") == True:
             tx_hash = response.json().get("transaction_hash")
             log_test("P2P Transfer via Blockchain", True)
             
@@ -531,7 +535,9 @@ def test_p2p_transfer(from_user_id, to_user_id=None):
                 f"{BACKEND_URL}/wallet/p2p-transfer?from_user_id={from_user_id}&to_user_id={to_user_id}&amount_hp={amount_hp}&description=Test Wallet P2P Transfer"
             )
             
-            if wallet_response.status_code == 200 and wallet_response.json().get("success") == True:
+            print(f"Wallet P2P Transfer Response: {wallet_response.status_code} - {wallet_response.text}")
+            
+            if wallet_response.status_code == 200 and "success" in wallet_response.json() and wallet_response.json().get("success") == True:
                 log_test("P2P Transfer via Wallet", True)
             else:
                 log_test("P2P Transfer via Wallet", False, wallet_response)
@@ -541,6 +547,7 @@ def test_p2p_transfer(from_user_id, to_user_id=None):
             log_test("P2P Transfer via Blockchain", False, response)
             return False
     except Exception as e:
+        print(f"P2P Transfer Exception: {str(e)}")
         log_test("P2P Transfer", False, error=str(e))
         return False
 
