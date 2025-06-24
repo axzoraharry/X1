@@ -82,6 +82,7 @@ app.include_router(analytics.router)   # Advanced analytics and AI insights
 app.include_router(voice_advanced.router)  # Advanced voice integration
 app.include_router(virtual_cards.router)  # Virtual debit cards
 app.include_router(card_management.router)  # Card management and analytics
+app.include_router(blockchain.router)  # Happy Paisa blockchain operations
 
 # Include the main API router
 app.include_router(api_router)
