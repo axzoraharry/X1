@@ -10,7 +10,8 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 # Removed pyga4 import as it's not compatible
 import firebase_admin
-from firebase_admin import credentials, analytics
+from firebase_admin import credentials
+# Removed analytics import as it's not available
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
 import requests
