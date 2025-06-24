@@ -517,6 +517,28 @@ def test_p2p_transfer(from_user_id, to_user_id=None):
                 log_test("P2P Transfer - Create Recipient User", False, user_response)
                 return False
         
+        # Check sender's balance
+        balance_response = requests.get(f"{BACKEND_URL}/blockchain/user/{from_user_id}/balance")
+        if balance_response.status_code == 200:
+            balance = balance_response.json().get("balance_hp", 0)
+            print(f"Current balance: {balance} HP")
+            
+            # If balance is too low, mint some tokens first
+            if balance < 0.2:  # Need at least 0.2 HP for the test
+                mint_amount = 0.5
+                print(f"Balance too low, minting {mint_amount} HP")
+                mint_response = requests.post(
+                    f"{BACKEND_URL}/blockchain/user/{from_user_id}/mint?amount_hp={mint_amount}&reference_id=test_mint_{uuid.uuid4().hex[:8]}"
+                )
+                if mint_response.status_code == 200:
+                    print(f"Successfully minted {mint_amount} HP")
+                    # Wait a moment for the transaction to be processed
+                    time.sleep(2)
+                else:
+                    print(f"Failed to mint tokens: {mint_response.status_code} - {mint_response.text}")
+        else:
+            print(f"Failed to get balance: {balance_response.status_code} - {balance_response.text}")
+        
         # Transfer a small amount
         amount_hp = 0.1
         transfer_url = f"{BACKEND_URL}/blockchain/transfer?from_user_id={from_user_id}&to_user_id={to_user_id}&amount_hp={amount_hp}&description=Test P2P Transfer"
