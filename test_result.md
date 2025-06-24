@@ -384,6 +384,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "Fixed syntax error in AutomationDashboard.jsx (missing closing tag for motion.div). Fixed icon imports by using lucide-react icons instead of heroicons. The frontend automation dashboard UI loads correctly with all components (Test Notification, AI Analysis, Data Backup, Automation History), but backend API calls to /api/automation/triggers/ are failing with 500 Internal Server Error. The error in backend logs shows: ValueError: [TypeError(\"'ObjectId' object is not iterable\"), TypeError('vars() argument must have __dict__ attribute')]. This appears to be a MongoDB serialization issue in the backend."
+      - working: false
+        agent: "testing"
+        comment: "Confirmed that the health status endpoint (/api/automation/health) works correctly and returns status 'healthy', but the automation triggers endpoint (/api/automation/triggers/{user_id}) returns 500 Internal Server Error. The UI shows the automation dashboard with all components, but the automation history section shows 'No automations triggered yet' due to the backend API error. The frontend implementation is correct, but the backend needs to fix the MongoDB serialization issue."
 
 metadata:
   created_by: "main_agent"
