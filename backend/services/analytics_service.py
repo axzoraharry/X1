@@ -91,23 +91,45 @@ class AnalyticsService:
             
             # Send to GA4 if client is available
             if self.ga4_client:
-                ga4_event = {
-                    'name': event_name,
-                    'params': {
-                        'timestamp_micros': int(datetime.utcnow().timestamp() * 1000000),
-                        **(parameters or {})
+                try:
+                    # Using direct GA4 Measurement Protocol API
+                    ga4_endpoint = f"https://www.google-analytics.com/mp/collect?measurement_id={self.ga4_client['measurement_id']}&api_secret={self.ga4_client['api_secret']}"
+                    
+                    ga4_payload = {
+                        "client_id": event_data['client_id'],
+                        "events": [{
+                            "name": event_name,
+                            "params": {
+                                "timestamp_micros": int(datetime.utcnow().timestamp() * 1000000),
+                                **(parameters or {})
+                            }
+                        }]
                     }
-                }
-                
-                self.ga4_client.send_event(
-                    client_id=event_data['client_id'],
-                    events=[ga4_event]
-                )
+                    
+                    # Non-blocking request using asyncio
+                    asyncio.create_task(self._send_ga4_event(ga4_endpoint, ga4_payload))
+                except Exception as e:
+                    logger.error(f"GA4 event sending failed: {e}")
+                    # Continue execution even if GA4 fails
             
             logger.debug(f"Event tracked: {event_name}")
             return True
             
         except Exception as e:
+            logger.error(f"Event tracking failed: {e}")
+            return False
+    
+    async def _send_ga4_event(self, endpoint: str, payload: Dict):
+        """Helper method to send events to GA4 asynchronously"""
+        try:
+            # Using requests in a non-blocking way
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(
+                None, 
+                lambda: requests.post(endpoint, json=payload, timeout=5)
+            )
+        except Exception as e:
+            logger.error(f"GA4 API request failed: {e}")
             logger.error(f"Event tracking failed: {e}")
             return False
     
