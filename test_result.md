@@ -228,20 +228,23 @@ backend:
         agent: "main"
         comment: "Fixed circular import issue by implementing lazy imports in all service files. All automation endpoints now working: health check, notifications, AI processing, and backup triggers. System shows 'degraded' status due to n8n not running (expected), but all automation services are operational."
 
-  - task: "n8n Automation Integration"
+  - task: "Analytics System API"
     implemented: true
-    working: false
-    file: "/app/backend/routes/automation.py, /app/backend/services/automation_service.py, /app/backend/services/notification_service.py"
-    stuck_count: 1
+    working: true
+    file: "/app/backend/routes/analytics.py, /app/backend/services/analytics_service.py"
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Implemented n8n automation integration with endpoints for health check, notifications, AI processing, data backup, and automation history"
+        comment: "Implemented comprehensive analytics system with Firebase Analytics + GA4 integration, MongoDB storage, and event tracking endpoints"
       - working: false
         agent: "testing"
-        comment: "Found critical issue: circular import dependency between automation_service.py, wallet_service.py, and notification_service.py. This prevents the backend from starting properly and causes all automation endpoints to return 502 errors. The circular dependency needs to be resolved for the automation features to work."
+        comment: "Found issues with GA4 and Firebase integration. The pyga4 package was not compatible and the firebase_admin package didn't have the analytics module."
+      - working: true
+        agent: "testing"
+        comment: "Fixed the analytics service by implementing direct GA4 Measurement Protocol API calls instead of using the pyga4 library. Also fixed MongoDB collection checks to use 'is not None' instead of boolean evaluation. All analytics endpoints are now working correctly: health check, summary, track-event, track-user-journey, track-happy-paisa-transaction, track-booking, and track-voice-command."
 
 frontend:
   - task: "API Integration Services"
