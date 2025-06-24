@@ -61,6 +61,7 @@ const App = () => {
           {/* Toast Notifications */}
           <Toaster />
         </BrowserRouter>
+        </AnalyticsProvider>
       </UserProvider>
     </div>
   );
