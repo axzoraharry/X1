@@ -55,6 +55,7 @@ async def health_check():
             "voice_service": "advanced_ai_ready",
             "services": {
                 "wallet": "operational",
+                "virtual_cards": "operational",
                 "travel": "operational", 
                 "recharge": "operational",
                 "ecommerce": "operational",
