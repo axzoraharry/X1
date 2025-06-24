@@ -199,27 +199,7 @@ const AutomationAnalytics = ({ userId }) => {
         </div>
       </motion.div>
 
-      {/* Recent Trends */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
-      >
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">4-Week Trends</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={analytics.recent_trends}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="week" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="notifications" fill="#3B82F6" name="Notifications" />
-            <Bar dataKey="ai_insights" fill="#8B5CF6" name="AI Insights" />
-            <Bar dataKey="backups" fill="#10B981" name="Backups" />
-          </BarChart>
-        </ResponsiveContainer>
-      </motion.div>
-
-      {/* Insights Panel */}
+      {/* AI Insights Panel */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -228,12 +208,13 @@ const AutomationAnalytics = ({ userId }) => {
         <div className="flex items-start gap-3">
           <Activity className="w-6 h-6 text-blue-600 mt-1" />
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">AI-Powered Insights</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">Real-Time AI Insights</h3>
             <div className="space-y-2 text-sm text-gray-700">
-              <p>• Your automation success rate improved by 5.2% this week</p>
-              <p>• Transaction notifications are your most active automation (45% of total)</p>
-              <p>• Best performance hours: 4:00 AM - 8:00 AM (97% success rate)</p>
-              <p>• Recommendation: Enable AI-powered categorization to reduce manual processing</p>
+              <p>• Your automation success rate is {analytics.overview.successful_rate.toFixed(1)}%</p>
+              <p>• Total automations executed: {analytics.overview.total_automations}</p>
+              <p>• Most active automation type: {analytics.automation_types[0]?.name || 'Messaging'}</p>
+              <p>• Average response time: {analytics.overview.avg_response_time}s</p>
+              <p>• Recommendation: {analytics.overview.successful_rate > 80 ? 'Excellent performance! Keep it up.' : 'Consider optimizing failed automations for better performance.'}</p>
             </div>
           </div>
         </div>
