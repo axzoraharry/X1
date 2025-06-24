@@ -110,15 +110,22 @@ const App = () => {
   const addHappyPaisa = async () => {
     if (!currentUser) return;
     
-    const amount = prompt("Enter INR amount to convert to Happy Paisa:");
-    if (!amount) return;
+    const amount = prompt("Enter INR amount to convert to Happy Paisa (1000 INR = 1 HP):");
+    if (!amount || isNaN(amount) || amount <= 0) return;
     
     try {
-      await axios.post(`${API}/happy-paisa/mint/${currentUser.id}?amount_inr=${amount}`);
+      const response = await axios.post(`${API}/happy-paisa/mint/${currentUser.id}?amount_inr=${amount}`);
+      console.log("Mint response:", response.data);
+      
+      // Refresh user data
       const userResponse = await axios.get(`${API}/users/${currentUser.id}`);
       setCurrentUser(userResponse.data);
+      
+      const hpAmount = (amount / 1000).toFixed(3);
+      alert(`Successfully added ${hpAmount} HP from ₹${amount}!`);
     } catch (error) {
       console.error("Error adding Happy Paisa:", error);
+      alert("Failed to add Happy Paisa. Please try again.");
     }
   };
 
