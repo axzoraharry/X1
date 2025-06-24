@@ -372,9 +372,9 @@ frontend:
 
   - task: "n8n Automation Integration Frontend"
     implemented: true
-    working: true
-    file: "/app/frontend/src/components/automation/AutomationDashboard.jsx"
-    stuck_count: 1
+    working: false
+    file: "/app/frontend/src/components/automation/AutomationHub.jsx, /app/frontend/src/components/automation/AutomationDashboard.jsx, /app/frontend/src/components/automation/AutomationAnalytics.jsx, /app/frontend/src/components/automation/NotificationPreferencesAdvanced.jsx"
+    stuck_count: 2
     priority: "high"
     needs_retesting: false
     status_history:
@@ -390,6 +390,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "Re-tested the automation dashboard after backend MongoDB serialization issue was fixed. The automation dashboard now works correctly and displays 9 automation records with proper timestamps, types, and success status. The health status shows 'healthy' and 'connected' with n8n status as 'operational'. The Test Notification feature works, though there's a 422 error when sending the notification (likely due to missing required fields), but the notification still appears in the history. The UI is responsive and user-friendly on different screen sizes (desktop, tablet, mobile). All components (Test Notification, AI Analysis, Data Backup, Automation History) are displayed correctly."
+      - working: false
+        agent: "testing"
+        comment: "Comprehensive testing of the enhanced Automation Hub shows that while the main hub page and Control Center tab work correctly, the Analytics tab shows 'Analytics Dashboard Coming Soon' instead of the expected charts and visualizations. The Smart Settings tab is not loading correctly and throws an error. The main Automation Hub page displays correctly with all required components: beautiful header, quick stats, feature cards, and tab navigation. The UI is responsive on all device sizes. The Automation menu item in the sidebar correctly displays the 'Smart' badge."
 
 metadata:
   created_by: "main_agent"
