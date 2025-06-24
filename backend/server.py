@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Import route modules
 from .routes import users, wallet, travel, recharge, ecommerce, dashboard, automation, analytics
-from .routes import voice_advanced, virtual_cards, card_management
+from .routes import voice_advanced, virtual_cards, card_management, blockchain
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
