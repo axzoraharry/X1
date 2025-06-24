@@ -15,26 +15,60 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-
-// Initialize Analytics and Performance
+let app = null;
 let analytics = null;
 let performance = null;
 
+// Create mock implementations for Firebase services
+const createMockAnalytics = () => {
+  return {
+    logEvent: (name, params) => console.log(`[Mock Analytics] Event: ${name}`, params),
+    setUserId: (id) => console.log(`[Mock Analytics] Set User ID: ${id}`),
+    setUserProperties: (props) => console.log(`[Mock Analytics] Set User Properties:`, props)
+  };
+};
+
 try {
-  // Only initialize in browser environment
-  if (typeof window !== 'undefined') {
-    analytics = getAnalytics(app);
-    performance = getPerformance(app);
-    
-    // Log initial app load
-    logEvent(analytics, "app_initialized", {
-      app_version: "2.0",
-      platform: "web"
-    });
+  // Check if we're using demo keys
+  const isDemoKey = firebaseConfig.apiKey === "demo-api-key-replace-with-real";
+  
+  if (isDemoKey) {
+    console.log("Using mock Firebase implementation due to demo API keys");
+    // Create mock implementations
+    app = { name: "[Mock Firebase App]" };
+    analytics = createMockAnalytics();
+    performance = {
+      trace: (name) => ({
+        start: () => console.log(`[Mock Performance] Started trace: ${name}`),
+        stop: () => console.log(`[Mock Performance] Stopped trace: ${name}`)
+      })
+    };
+  } else {
+    // Only initialize in browser environment with real keys
+    if (typeof window !== 'undefined') {
+      app = initializeApp(firebaseConfig);
+      analytics = getAnalytics(app);
+      performance = getPerformance(app);
+      
+      // Log initial app load
+      logEvent(analytics, "app_initialized", {
+        app_version: "2.0",
+        platform: "web"
+      });
+    }
   }
 } catch (error) {
   console.warn("Firebase Analytics initialization failed:", error);
+  
+  // Create mock implementations as fallback
+  app = { name: "[Mock Firebase App]" };
+  analytics = createMockAnalytics();
+  performance = {
+    trace: (name) => ({
+      start: () => console.log(`[Mock Performance] Started trace: ${name}`),
+      stop: () => console.log(`[Mock Performance] Stopped trace: ${name}`)
+    })
+  };
 }
 
 // Analytics Event Types for Axzora Mr. Happy 2.0
