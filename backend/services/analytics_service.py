@@ -290,7 +290,7 @@ class AnalyticsService:
     ) -> Dict[str, Any]:
         """Get analytics summary for dashboard"""
         try:
-            if not self.analytics_collection:
+            if self.analytics_collection is None:
                 return {"error": "Analytics storage not available"}
             
             # Calculate date range
