@@ -1,273 +1,317 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
-from typing import Dict, Any, List, Optional
-from pydantic import BaseModel
-from datetime import datetime, timedelta
-import logging
-from ..services.analytics_service import AnalyticsService
-from ..services.automation_service import AutomationService
-from ..models.automation import AutomationRule, AIInsight, AutomationMetrics
+"""
+Analytics API Routes for Axzora Mr. Happy 2.0
+Provides endpoints for tracking events and retrieving analytics data
+"""
 
-logger = logging.getLogger(__name__)
+from fastapi import APIRouter, HTTPException, Request, Depends
+from pydantic import BaseModel, Field
+from typing import Dict, List, Optional, Any
+from datetime import datetime
+import json
+
+from ..services.analytics_service import analytics_service
+
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
-class AnalyticsRequest(BaseModel):
-    user_id: str
-    time_range: str = "7d"  # 7d, 30d, 90d
-    metrics: List[str] = ["automation_performance", "usage_patterns", "ai_insights"]
+# Request Models
+class EventTrackingRequest(BaseModel):
+    event_name: str = Field(..., description="Name of the event to track")
+    user_id: Optional[str] = Field(None, description="User identifier")
+    parameters: Optional[Dict[str, Any]] = Field(None, description="Event parameters")
 
-class CustomRuleRequest(BaseModel):
-    user_id: str
-    rule_name: str
-    trigger_conditions: Dict[str, Any]
-    automation_config: Dict[str, Any]
-    is_active: bool = True
+class UserJourneyRequest(BaseModel):
+    user_id: str = Field(..., description="User identifier")
+    journey_step: str = Field(..., description="Current step in user journey")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
-@router.get("/dashboard/{user_id}")
-async def get_analytics_dashboard(user_id: str, time_range: str = "7d"):
-    """
-    Get comprehensive analytics dashboard for user
-    """
+class BusinessMetricRequest(BaseModel):
+    metric_name: str = Field(..., description="Name of the business metric")
+    value: float = Field(..., description="Metric value")
+    currency: str = Field("HP", description="Currency code")
+    user_id: Optional[str] = Field(None, description="User identifier")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
+
+class ErrorTrackingRequest(BaseModel):
+    error_type: str = Field(..., description="Type of error")
+    error_message: str = Field(..., description="Error message")
+    user_id: Optional[str] = Field(None, description="User identifier")
+    endpoint: Optional[str] = Field(None, description="API endpoint where error occurred")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional error context")
+
+class PerformanceMetricRequest(BaseModel):
+    operation_name: str = Field(..., description="Name of the operation")
+    duration_ms: float = Field(..., description="Operation duration in milliseconds")
+    success: bool = Field(..., description="Whether operation was successful")
+    user_id: Optional[str] = Field(None, description="User identifier")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional performance data")
+
+# Axzora-specific request models
+class HappyPaisaTransactionRequest(BaseModel):
+    user_id: str = Field(..., description="User identifier")
+    transaction_type: str = Field(..., description="Type of transaction (credit/debit)")
+    amount: float = Field(..., description="Transaction amount")
+    currency: str = Field(..., description="Currency (HP/INR)")
+    transaction_id: str = Field(..., description="Unique transaction identifier")
+
+class BookingEventRequest(BaseModel):
+    user_id: str = Field(..., description="User identifier")
+    booking_type: str = Field(..., description="Type of booking (flight/hotel/recharge)")
+    booking_id: str = Field(..., description="Unique booking identifier")
+    amount: float = Field(..., description="Booking amount")
+    status: str = Field(..., description="Booking status")
+    metadata: Optional[Dict[str, Any]] = Field(None, description="Additional booking data")
+
+class VoiceCommandRequest(BaseModel):
+    user_id: str = Field(..., description="User identifier")
+    command_type: str = Field(..., description="Type of voice command")
+    success: bool = Field(..., description="Whether command was successful")
+    duration_ms: float = Field(..., description="Command processing duration")
+    confidence_score: Optional[float] = Field(None, description="Voice recognition confidence")
+
+# Analytics API Endpoints
+
+@router.post("/track-event")
+async def track_event(request: EventTrackingRequest, http_request: Request):
+    """Track a custom analytics event"""
     try:
-        analytics_data = await AnalyticsService.get_user_analytics(user_id, time_range)
+        client_id = http_request.client.host if http_request.client else "unknown"
+        
+        success = await analytics_service.track_event(
+            event_name=request.event_name,
+            user_id=request.user_id,
+            client_id=client_id,
+            parameters=request.parameters
+        )
+        
+        if success:
+            return {
+                "status": "success",
+                "message": "Event tracked successfully",
+                "event_name": request.event_name,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Failed to track event")
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/track-user-journey")
+async def track_user_journey(request: UserJourneyRequest):
+    """Track user journey step for funnel analysis"""
+    try:
+        await analytics_service.track_user_journey(
+            user_id=request.user_id,
+            journey_step=request.journey_step,
+            metadata=request.metadata
+        )
         
         return {
-            "user_id": user_id,
-            "time_range": time_range,
-            "overview": analytics_data.get("overview", {}),
-            "daily_stats": analytics_data.get("daily_stats", []),
-            "automation_types": analytics_data.get("automation_types", []),
-            "performance_metrics": analytics_data.get("performance_metrics", []),
-            "ai_insights": analytics_data.get("ai_insights", []),
-            "trends": analytics_data.get("trends", []),
-            "recommendations": analytics_data.get("recommendations", [])
+            "status": "success",
+            "message": "User journey step tracked",
+            "user_id": request.user_id,
+            "journey_step": request.journey_step
         }
         
     except Exception as e:
-        logger.error(f"Failed to get analytics dashboard: {e}")
-        raise HTTPException(status_code=500, detail=f"Analytics failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/automation-performance/{user_id}")
-async def get_automation_performance(user_id: str, days: int = 7):
-    """
-    Get detailed automation performance metrics
-    """
+@router.post("/track-business-metric")
+async def track_business_metric(request: BusinessMetricRequest):
+    """Track business metrics like revenue, transactions"""
     try:
-        performance_data = await AnalyticsService.get_automation_performance(user_id, days)
+        await analytics_service.track_business_metric(
+            metric_name=request.metric_name,
+            value=request.value,
+            currency=request.currency,
+            user_id=request.user_id,
+            metadata=request.metadata
+        )
         
         return {
-            "user_id": user_id,
-            "period_days": days,
-            "total_automations": performance_data.get("total_automations", 0),
-            "success_rate": performance_data.get("success_rate", 0),
-            "avg_response_time": performance_data.get("avg_response_time", 0),
-            "error_rate": performance_data.get("error_rate", 0),
-            "peak_hours": performance_data.get("peak_hours", []),
-            "bottlenecks": performance_data.get("bottlenecks", []),
-            "optimization_suggestions": performance_data.get("optimization_suggestions", [])
+            "status": "success",
+            "message": "Business metric tracked",
+            "metric_name": request.metric_name,
+            "value": request.value,
+            "currency": request.currency
         }
         
     except Exception as e:
-        logger.error(f"Failed to get automation performance: {e}")
-        raise HTTPException(status_code=500, detail=f"Performance analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/spending-insights/{user_id}")
-async def get_ai_spending_insights(user_id: str):
-    """
-    Get AI-powered spending insights and predictions
-    """
+@router.post("/track-error")
+async def track_error(request: ErrorTrackingRequest):
+    """Track application errors for monitoring"""
     try:
-        insights = await AnalyticsService.get_ai_spending_insights(user_id)
+        await analytics_service.track_error(
+            error_type=request.error_type,
+            error_message=request.error_message,
+            user_id=request.user_id,
+            endpoint=request.endpoint,
+            metadata=request.metadata
+        )
         
         return {
-            "user_id": user_id,
-            "generated_at": datetime.utcnow().isoformat(),
-            "spending_categories": insights.get("spending_categories", {}),
-            "monthly_trends": insights.get("monthly_trends", {}),
-            "predictions": insights.get("predictions", {}),
-            "recommendations": insights.get("recommendations", []),
-            "anomalies": insights.get("anomalies", []),
-            "budget_optimization": insights.get("budget_optimization", {}),
-            "confidence_score": insights.get("confidence_score", 0.0)
+            "status": "success",
+            "message": "Error tracked for monitoring",
+            "error_type": request.error_type
         }
         
     except Exception as e:
-        logger.error(f"Failed to get spending insights: {e}")
-        raise HTTPException(status_code=500, detail=f"AI insights failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/custom-rules/{user_id}")
-async def create_custom_automation_rule(user_id: str, rule_request: CustomRuleRequest):
-    """
-    Create custom automation rule for user
-    """
+@router.post("/track-performance")
+async def track_performance(request: PerformanceMetricRequest):
+    """Track performance metrics for optimization"""
     try:
-        rule = AutomationRule(
+        await analytics_service.track_performance_metric(
+            operation_name=request.operation_name,
+            duration_ms=request.duration_ms,
+            success=request.success,
+            user_id=request.user_id,
+            metadata=request.metadata
+        )
+        
+        return {
+            "status": "success",
+            "message": "Performance metric tracked",
+            "operation_name": request.operation_name,
+            "duration_ms": request.duration_ms
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Axzora-specific tracking endpoints
+
+@router.post("/track-happy-paisa-transaction")
+async def track_happy_paisa_transaction(request: HappyPaisaTransactionRequest):
+    """Track Happy Paisa wallet transactions"""
+    try:
+        await analytics_service.track_happy_paisa_transaction(
+            user_id=request.user_id,
+            transaction_type=request.transaction_type,
+            amount=request.amount,
+            currency=request.currency,
+            transaction_id=request.transaction_id
+        )
+        
+        return {
+            "status": "success",
+            "message": "Happy Paisa transaction tracked",
+            "transaction_id": request.transaction_id,
+            "amount": request.amount,
+            "currency": request.currency
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/track-booking")
+async def track_booking(request: BookingEventRequest):
+    """Track travel and service bookings"""
+    try:
+        await analytics_service.track_booking_event(
+            user_id=request.user_id,
+            booking_type=request.booking_type,
+            booking_id=request.booking_id,
+            amount=request.amount,
+            status=request.status,
+            metadata=request.metadata
+        )
+        
+        return {
+            "status": "success",
+            "message": f"{request.booking_type} booking tracked",
+            "booking_id": request.booking_id,
+            "status": request.status
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/track-voice-command")
+async def track_voice_command(request: VoiceCommandRequest):
+    """Track Mr. Happy voice assistant usage"""
+    try:
+        await analytics_service.track_voice_command(
+            user_id=request.user_id,
+            command_type=request.command_type,
+            success=request.success,
+            duration_ms=request.duration_ms,
+            confidence_score=request.confidence_score
+        )
+        
+        return {
+            "status": "success",
+            "message": "Voice command tracked",
+            "command_type": request.command_type,
+            "success": request.success
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Analytics Data Retrieval Endpoints
+
+@router.get("/summary/{user_id}")
+async def get_user_analytics_summary(user_id: str, days: int = 30):
+    """Get analytics summary for a specific user"""
+    try:
+        summary = await analytics_service.get_analytics_summary(
             user_id=user_id,
-            rule_name=rule_request.rule_name,
-            trigger_condition=rule_request.trigger_conditions,
-            automation_config=rule_request.automation_config,
-            is_active=rule_request.is_active
-        )
-        
-        result = await AnalyticsService.create_automation_rule(rule)
-        
-        return {
-            "status": "created",
-            "rule_id": result.get("rule_id"),
-            "rule_name": rule_request.rule_name,
-            "is_active": rule_request.is_active,
-            "message": "Custom automation rule created successfully"
-        }
-        
-    except Exception as e:
-        logger.error(f"Failed to create custom rule: {e}")
-        raise HTTPException(status_code=500, detail=f"Rule creation failed: {str(e)}")
-
-@router.get("/custom-rules/{user_id}")
-async def get_user_automation_rules(user_id: str):
-    """
-    Get user's custom automation rules
-    """
-    try:
-        rules = await AnalyticsService.get_user_automation_rules(user_id)
-        
-        return {
-            "user_id": user_id,
-            "rules": rules,
-            "total_rules": len(rules),
-            "active_rules": len([r for r in rules if r.get("is_active", False)])
-        }
-        
-    except Exception as e:
-        logger.error(f"Failed to get automation rules: {e}")
-        raise HTTPException(status_code=500, detail=f"Failed to get rules: {str(e)}")
-
-@router.put("/custom-rules/{rule_id}")
-async def update_automation_rule(rule_id: str, rule_request: CustomRuleRequest):
-    """
-    Update existing automation rule
-    """
-    try:
-        result = await AnalyticsService.update_automation_rule(rule_id, rule_request.dict())
-        
-        return {
-            "status": "updated",
-            "rule_id": rule_id,
-            "message": "Automation rule updated successfully"
-        }
-        
-    except Exception as e:
-        logger.error(f"Failed to update automation rule: {e}")
-        raise HTTPException(status_code=500, detail=f"Rule update failed: {str(e)}")
-
-@router.delete("/custom-rules/{rule_id}")
-async def delete_automation_rule(rule_id: str, user_id: str):
-    """
-    Delete automation rule
-    """
-    try:
-        result = await AnalyticsService.delete_automation_rule(rule_id, user_id)
-        
-        return {
-            "status": "deleted",
-            "rule_id": rule_id,
-            "message": "Automation rule deleted successfully"
-        }
-        
-    except Exception as e:
-        logger.error(f"Failed to delete automation rule: {e}")
-        raise HTTPException(status_code=500, detail=f"Rule deletion failed: {str(e)}")
-
-@router.get("/predictions/{user_id}")
-async def get_spending_predictions(user_id: str, horizon_days: int = 30):
-    """
-    Get AI-powered spending predictions
-    """
-    try:
-        predictions = await AnalyticsService.get_spending_predictions(user_id, horizon_days)
-        
-        return {
-            "user_id": user_id,
-            "prediction_horizon_days": horizon_days,
-            "predicted_spending": predictions.get("predicted_spending", {}),
-            "category_forecasts": predictions.get("category_forecasts", {}),
-            "risk_assessment": predictions.get("risk_assessment", {}),
-            "recommendations": predictions.get("recommendations", []),
-            "confidence_intervals": predictions.get("confidence_intervals", {}),
-            "generated_at": datetime.utcnow().isoformat()
-        }
-        
-    except Exception as e:
-        logger.error(f"Failed to get spending predictions: {e}")
-        raise HTTPException(status_code=500, detail=f"Predictions failed: {str(e)}")
-
-@router.post("/anomaly-detection/{user_id}")
-async def detect_spending_anomalies(user_id: str, background_tasks: BackgroundTasks):
-    """
-    Detect anomalies in spending patterns
-    """
-    try:
-        # Run anomaly detection in background
-        background_tasks.add_task(
-            AnalyticsService.detect_spending_anomalies,
-            user_id
+            days=days
         )
         
         return {
-            "status": "detection_started",
+            "status": "success",
             "user_id": user_id,
-            "message": "Anomaly detection initiated. Results will be available shortly."
+            "summary": summary
         }
         
     except Exception as e:
-        logger.error(f"Failed to start anomaly detection: {e}")
-        raise HTTPException(status_code=500, detail=f"Anomaly detection failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/automation-health")
-async def get_automation_health():
-    """
-    Get overall automation system health
-    """
+@router.get("/summary")
+async def get_global_analytics_summary(days: int = 30):
+    """Get global analytics summary for all users"""
     try:
-        health_metrics = await AnalyticsService.get_system_health()
+        summary = await analytics_service.get_analytics_summary(days=days)
         
         return {
-            "status": "healthy" if health_metrics.get("overall_health", 0) > 80 else "degraded",
-            "overall_health_score": health_metrics.get("overall_health", 0),
-            "active_workflows": health_metrics.get("active_workflows", 0),
-            "total_users": health_metrics.get("total_users", 0),
-            "daily_automations": health_metrics.get("daily_automations", 0),
-            "error_rate": health_metrics.get("error_rate", 0),
-            "avg_response_time": health_metrics.get("avg_response_time", 0),
-            "resource_usage": health_metrics.get("resource_usage", {}),
-            "last_updated": datetime.utcnow().isoformat()
+            "status": "success",
+            "summary": summary
         }
         
     except Exception as e:
-        logger.error(f"Failed to get automation health: {e}")
-        raise HTTPException(status_code=500, detail=f"Health check failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/export/{user_id}")
-async def export_analytics_data(user_id: str, format: str = "json", time_range: str = "30d"):
-    """
-    Export user analytics data in various formats
-    """
+@router.get("/health")
+async def analytics_health_check():
+    """Check analytics service health"""
     try:
-        if format not in ["json", "csv", "xlsx"]:
-            raise HTTPException(status_code=400, detail="Unsupported export format")
+        # Test database connection
+        db_status = "connected" if analytics_service.analytics_collection else "disconnected"
         
-        export_data = await AnalyticsService.export_user_data(user_id, time_range, format)
+        # Test GA4 connection
+        ga4_status = "configured" if analytics_service.ga4_client else "demo_mode"
+        
+        # Test Firebase connection
+        firebase_status = "connected" if analytics_service.firebase_app else "demo_mode"
         
         return {
-            "status": "export_ready",
-            "user_id": user_id,
-            "format": format,
-            "time_range": time_range,
-            "download_url": export_data.get("download_url"),
-            "file_size": export_data.get("file_size"),
-            "generated_at": datetime.utcnow().isoformat(),
-            "expires_at": (datetime.utcnow() + timedelta(hours=24)).isoformat()
+            "status": "healthy",
+            "services": {
+                "database": db_status,
+                "ga4": ga4_status,
+                "firebase": firebase_status
+            },
+            "timestamp": datetime.utcnow().isoformat()
         }
         
     except Exception as e:
-        logger.error(f"Failed to export analytics data: {e}")
-        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow().isoformat()
+        }
