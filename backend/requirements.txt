@@ -25,6 +25,11 @@ jq>=1.6.0
 typer>=0.9.0
 aiohttp>=3.9.0
 
+# Firebase and Analytics Dependencies
+firebase-admin>=6.9.0
+google-analytics-data>=0.18.0
+pyga4>=0.2.0
+
 # Mycroft AI and Voice Processing Dependencies
 websocket-client>=1.6.0
 speechrecognition>=3.10.0
