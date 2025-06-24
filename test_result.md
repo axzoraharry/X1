@@ -370,6 +370,21 @@ frontend:
         agent: "testing"
         comment: "Final testing confirms e-commerce integration is working correctly. The page has been updated to ShopUpdated.jsx. Product catalog displays real products with proper pricing in HP and INR. Cart functionality works correctly, allowing users to add products and see cart summary."
 
+  - task: "n8n Automation Integration Frontend"
+    implemented: true
+    working: false
+    file: "/app/frontend/src/components/automation/AutomationDashboard.jsx"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created automation dashboard with n8n integration - needs testing"
+      - working: false
+        agent: "testing"
+        comment: "Fixed syntax error in AutomationDashboard.jsx (missing closing tag for motion.div). Fixed icon imports by using lucide-react icons instead of heroicons. The frontend automation dashboard UI loads correctly with all components (Test Notification, AI Analysis, Data Backup, Automation History), but backend API calls to /api/automation/triggers/ are failing with 500 Internal Server Error. The error in backend logs shows: ValueError: [TypeError(\"'ObjectId' object is not iterable\"), TypeError('vars() argument must have __dict__ attribute')]. This appears to be a MongoDB serialization issue in the backend."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
