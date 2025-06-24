@@ -19,59 +19,12 @@ import {
 
 const NotificationPreferencesAdvanced = ({ userId }) => {
   const [preferences, setPreferences] = useState({
-    notifications: {
-      transaction_alerts: {
-        enabled: true,
-        channels: ['telegram', 'push'],
-        threshold: 0, // Alert for all transactions
-        sound: true
-      },
-      spending_insights: {
-        enabled: true,
-        channels: ['telegram'],
-        frequency: 'weekly', // daily, weekly, monthly
-        ai_powered: true
-      },
-      low_balance: {
-        enabled: true,
-        channels: ['telegram', 'sms', 'push'],
-        threshold: 1.0, // Alert when < 1 HP
-        urgent: true
-      },
-      booking_confirmations: {
-        enabled: true,
-        channels: ['email', 'telegram'],
-        include_details: true
-      },
-      promotional: {
-        enabled: false,
-        channels: ['email'],
-        frequency: 'weekly'
-      }
-    },
-    automation_rules: {
-      auto_backup: {
-        enabled: true,
-        frequency: 'daily', // daily, weekly, monthly
-        destination: 'google_drive',
-        include_transactions: true,
-        include_profile: true
-      },
-      smart_categorization: {
-        enabled: true,
-        ai_learning: true,
-        auto_tag: true
-      },
-      spending_limits: {
-        enabled: false,
-        daily_limit: 10.0, // HP
-        category_limits: {
-          'Food': 5.0,
-          'Shopping': 15.0,
-          'Travel': 25.0
-        }
-      }
-    },
+    transaction_alerts: { enabled: true, channels: ['telegram'], threshold: 0, sound: true },
+    spending_insights: { enabled: true, channels: ['telegram'], frequency: 'weekly', ai_powered: true },
+    low_balance: { enabled: true, channels: ['telegram', 'sms'], threshold: 1.0, urgent: true },
+    booking_confirmations: { enabled: true, channels: ['email', 'telegram'], include_details: true },
+    auto_backup: { enabled: true, frequency: 'daily', destination: 'google_drive' },
+    smart_categorization: { enabled: true, ai_learning: true },
     ai_features: {
       personalized_insights: true,
       spending_predictions: true,
@@ -85,26 +38,23 @@ const NotificationPreferencesAdvanced = ({ userId }) => {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const updatePreference = (category, subcategory, field, value) => {
+  const updatePreference = (category, field, value) => {
     setPreferences(prev => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [subcategory]: {
-          ...prev[category][subcategory],
-          [field]: value
-        }
+        [field]: value
       }
     }));
   };
 
-  const toggleChannel = (category, subcategory, channel) => {
-    const currentChannels = preferences[category][subcategory].channels || [];
+  const toggleChannel = (category, channel) => {
+    const currentChannels = preferences[category].channels || [];
     const newChannels = currentChannels.includes(channel)
       ? currentChannels.filter(c => c !== channel)
       : [...currentChannels, channel];
     
-    updatePreference(category, subcategory, 'channels', newChannels);
+    updatePreference(category, 'channels', newChannels);
   };
 
   const savePreferences = async () => {
@@ -130,11 +80,10 @@ const NotificationPreferencesAdvanced = ({ userId }) => {
   const channels = [
     { id: 'telegram', label: 'Telegram', icon: MessageSquare, color: 'blue' },
     { id: 'email', label: 'Email', icon: Mail, color: 'green' },
-    { id: 'sms', label: 'SMS', icon: Smartphone, color: 'orange' },
-    { id: 'push', label: 'Push', icon: Bell, color: 'purple' }
+    { id: 'sms', label: 'SMS', icon: Smartphone, color: 'orange' }
   ];
 
-  const NotificationSection = ({ title, description, icon: Icon, config, category, subcategory }) => (
+  const PreferenceCard = ({ title, description, icon: Icon, config, category, children }) => (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
@@ -154,7 +103,7 @@ const NotificationPreferencesAdvanced = ({ userId }) => {
           <input
             type="checkbox"
             checked={config.enabled}
-            onChange={(e) => updatePreference(category, subcategory, 'enabled', e.target.checked)}
+            onChange={(e) => updatePreference(category, 'enabled', e.target.checked)}
             className="sr-only"
           />
           <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -167,121 +116,13 @@ const NotificationPreferencesAdvanced = ({ userId }) => {
         </label>
       </div>
 
-      {config.enabled && (
+      {config.enabled && children && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="space-y-4"
+          className="space-y-3"
         >
-          {/* Channels */}
-          {config.channels && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Notification Channels
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {channels.map(channel => {
-                  const isSelected = config.channels.includes(channel.id);
-                  return (
-                    <button
-                      key={channel.id}
-                      onClick={() => toggleChannel(category, subcategory, channel.id)}
-                      className={`flex items-center gap-2 p-2 rounded-lg border-2 transition-all ${
-                        isSelected
-                          ? `border-${channel.color}-500 bg-${channel.color}-50 text-${channel.color}-700`
-                          : 'border-gray-200 hover:border-gray-300 text-gray-600'
-                      }`}
-                    >
-                      <channel.icon className="w-4 h-4" />
-                      <span className="text-sm font-medium">{channel.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Threshold */}
-          {config.threshold !== undefined && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Threshold ({subcategory === 'low_balance' ? 'HP' : 'Amount'})
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={config.threshold}
-                onChange={(e) => updatePreference(category, subcategory, 'threshold', parseFloat(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          )}
-
-          {/* Frequency */}
-          {config.frequency && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Frequency
-              </label>
-              <select
-                value={config.frequency}
-                onChange={(e) => updatePreference(category, subcategory, 'frequency', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-              </select>
-            </div>
-          )}
-
-          {/* Additional Options */}
-          <div className="grid grid-cols-2 gap-4">
-            {config.sound !== undefined && (
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={config.sound}
-                  onChange={(e) => updatePreference(category, subcategory, 'sound', e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">Sound alerts</span>
-              </label>
-            )}
-            {config.urgent !== undefined && (
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={config.urgent}
-                  onChange={(e) => updatePreference(category, subcategory, 'urgent', e.target.checked)}
-                  className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
-                />
-                <span className="text-sm text-gray-700">Urgent priority</span>
-              </label>
-            )}
-            {config.ai_powered !== undefined && (
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={config.ai_powered}
-                  onChange={(e) => updatePreference(category, subcategory, 'ai_powered', e.target.checked)}
-                  className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                />
-                <span className="text-sm text-gray-700">AI-powered</span>
-              </label>
-            )}
-            {config.include_details !== undefined && (
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={config.include_details}
-                  onChange={(e) => updatePreference(category, subcategory, 'include_details', e.target.checked)}
-                  className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
-                />
-                <span className="text-sm text-gray-700">Include details</span>
-              </label>
-            )}
-          </div>
+          {children}
         </motion.div>
       )}
     </motion.div>
@@ -328,38 +169,76 @@ const NotificationPreferencesAdvanced = ({ userId }) => {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-4"
           >
-            <NotificationSection
+            <PreferenceCard
               title="Transaction Alerts"
               description="Get notified about all wallet activities"
               icon={CreditCard}
-              config={preferences.notifications.transaction_alerts}
-              category="notifications"
-              subcategory="transaction_alerts"
-            />
-            <NotificationSection
+              config={preferences.transaction_alerts}
+              category="transaction_alerts"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Channels</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {channels.map(channel => {
+                    const isSelected = preferences.transaction_alerts.channels?.includes(channel.id);
+                    return (
+                      <button
+                        key={channel.id}
+                        onClick={() => toggleChannel('transaction_alerts', channel.id)}
+                        className={`flex items-center gap-2 p-2 rounded-lg border-2 transition-all ${
+                          isSelected
+                            ? `border-${channel.color}-500 bg-${channel.color}-50`
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <channel.icon className="w-4 h-4" />
+                        <span className="text-sm">{channel.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </PreferenceCard>
+
+            <PreferenceCard
               title="AI Spending Insights"
               description="Receive personalized spending analysis"
               icon={TrendingUp}
-              config={preferences.notifications.spending_insights}
-              category="notifications"
-              subcategory="spending_insights"
-            />
-            <NotificationSection
+              config={preferences.spending_insights}
+              category="spending_insights"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                <select
+                  value={preferences.spending_insights.frequency}
+                  onChange={(e) => updatePreference('spending_insights', 'frequency', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </PreferenceCard>
+
+            <PreferenceCard
               title="Low Balance Alerts"
               description="Never run out of Happy Paisa unexpectedly"
               icon={AlertTriangle}
-              config={preferences.notifications.low_balance}
-              category="notifications"
-              subcategory="low_balance"
-            />
-            <NotificationSection
-              title="Booking Confirmations"
-              description="Travel and service booking notifications"
-              icon={Plane}
-              config={preferences.notifications.booking_confirmations}
-              category="notifications"
-              subcategory="booking_confirmations"
-            />
+              config={preferences.low_balance}
+              category="low_balance"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Threshold (HP)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={preferences.low_balance.threshold}
+                  onChange={(e) => updatePreference('low_balance', 'threshold', parseFloat(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                />
+              </div>
+            </PreferenceCard>
           </motion.div>
         )}
 
@@ -371,22 +250,46 @@ const NotificationPreferencesAdvanced = ({ userId }) => {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-4"
           >
-            <NotificationSection
+            <PreferenceCard
               title="Auto Backup"
               description="Automatically backup your data to cloud storage"
               icon={Save}
-              config={preferences.automation_rules.auto_backup}
-              category="automation_rules"
-              subcategory="auto_backup"
-            />
-            <NotificationSection
+              config={preferences.auto_backup}
+              category="auto_backup"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
+                <select
+                  value={preferences.auto_backup.frequency}
+                  onChange={(e) => updatePreference('auto_backup', 'frequency', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+            </PreferenceCard>
+
+            <PreferenceCard
               title="Smart Categorization"
               description="AI-powered transaction categorization"
               icon={TrendingUp}
-              config={preferences.automation_rules.smart_categorization}
-              category="automation_rules"
-              subcategory="smart_categorization"
-            />
+              config={preferences.smart_categorization}
+              category="smart_categorization"
+            >
+              <div className="space-y-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={preferences.smart_categorization.ai_learning}
+                    onChange={(e) => updatePreference('smart_categorization', 'ai_learning', e.target.checked)}
+                    className="w-4 h-4 text-blue-600 rounded"
+                  />
+                  <span className="text-sm text-gray-700">Enable AI learning</span>
+                </label>
+              </div>
+            </PreferenceCard>
           </motion.div>
         )}
 
@@ -413,7 +316,7 @@ const NotificationPreferencesAdvanced = ({ userId }) => {
                           [key]: e.target.checked
                         }
                       }))}
-                      className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                      className="w-4 h-4 text-purple-600 rounded"
                     />
                     <span className="text-sm text-gray-700 capitalize">
                       {key.replace('_', ' ')}
