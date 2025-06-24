@@ -277,7 +277,7 @@ class AutomationService:
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     webhook_url,
-                    json=payload,
+                    data=json.dumps(payload, default=json_serializer),
                     headers=headers,
                     timeout=30
                 ) as response:
