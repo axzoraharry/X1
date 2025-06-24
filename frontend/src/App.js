@@ -11,6 +11,7 @@ import Travel from "./pages/Travel";
 import Recharge from "./pages/Recharge";
 import ShopUpdated from "./pages/ShopUpdated";
 import WalletUpdated from "./pages/WalletUpdated";
+import VirtualCards from "./pages/VirtualCards";
 import AutomationHub from "./components/automation/AutomationHub";
 import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
 
