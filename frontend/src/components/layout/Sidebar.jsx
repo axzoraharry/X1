@@ -51,6 +51,13 @@ const navigationItems = [
     description: 'Digital currency wallet'
   },
   {
+    title: 'Virtual Cards',
+    href: '/virtual-cards',
+    icon: CreditCard,
+    description: 'Virtual debit cards',
+    badge: 'New'
+  },
+  {
     title: 'Automation',
     href: '/automation',
     icon: Settings,
