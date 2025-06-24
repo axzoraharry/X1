@@ -408,7 +408,7 @@ metadata:
 
 test_plan:
   current_focus:
-    - "n8n Automation Integration Frontend"
+    - "Analytics System API"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
