@@ -3,6 +3,8 @@ import { userService } from '../services/userService';
 
 const UserContext = createContext();
 
+export { UserContext }; // Export the context
+
 export const useUser = () => {
   const context = useContext(UserContext);
   if (!context) {
