@@ -167,70 +167,18 @@ const AutomationAnalytics = ({ userId }) => {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily Activity Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Daily Activity</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={analytics.daily_stats}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis 
-                dataKey="date" 
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              />
-              <YAxis />
-              <Tooltip 
-                labelFormatter={(value) => new Date(value).toLocaleDateString()}
-                formatter={(value, name) => [value, name === 'success' ? 'Successful' : 'Failed']}
-              />
-              <Area
-                type="monotone"
-                dataKey="success"
-                stackId="1"
-                stroke="#10B981"
-                fill="#10B981"
-                fillOpacity={0.8}
-              />
-              <Area
-                type="monotone"
-                dataKey="failed"
-                stackId="1"
-                stroke="#EF4444"
-                fill="#EF4444"
-                fillOpacity={0.8}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </motion.div>
+        <SimpleChart 
+          data={analytics.daily_stats} 
+          title="Daily Activity" 
+          type="bar"
+        />
 
-        {/* Automation Types Pie Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl p-6 shadow-lg border border-gray-100"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Automation Types</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={analytics.automation_types}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {analytics.automation_types.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </motion.div>
+        {/* Automation Types Chart */}
+        <SimpleChart 
+          data={analytics.automation_types} 
+          title="Automation Types" 
+          type="pie"
+        />
       </div>
 
       {/* Performance Metrics */}
