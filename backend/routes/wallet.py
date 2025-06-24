@@ -6,6 +6,36 @@ from ..services.blockchain_wallet_service import BlockchainWalletService
 
 router = APIRouter(prefix="/api/wallet", tags=["wallet"])
 
+@router.post("/transactions")
+async def add_transaction(transaction_data: dict):
+    """Add a wallet transaction via blockchain"""
+    try:
+        from ..models.wallet import WalletTransaction
+        
+        # Create transaction object
+        transaction = WalletTransaction(
+            user_id=transaction_data.get("user_id"),
+            type=transaction_data.get("type"),
+            amount_hp=transaction_data.get("amount_hp"),
+            description=transaction_data.get("description"),
+            category=transaction_data.get("category", "Other"),
+            reference_id=transaction_data.get("reference_id")
+        )
+        
+        # Process via blockchain wallet service
+        transaction_id = await BlockchainWalletService.add_transaction(transaction)
+        
+        return {
+            "success": True,
+            "transaction_id": transaction_id,
+            "message": "Transaction processed via blockchain",
+            "amount_hp": transaction.amount_hp,
+            "type": transaction.type,
+            "blockchain_hash": getattr(transaction, 'blockchain_hash', None)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to add transaction: {str(e)}")
+
 @router.get("/{user_id}/balance", response_model=WalletBalance)
 async def get_wallet_balance(user_id: str):
     """Get user's Happy Paisa balance from blockchain"""
