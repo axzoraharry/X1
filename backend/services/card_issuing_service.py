@@ -262,7 +262,8 @@ class CardIssuingService:
             card = VirtualCard(**card_doc)
             
             # Check user's Happy Paisa balance
-            user_balance = await WalletService.get_balance(card.user_id)
+            user_balance_obj = await WalletService.get_balance(card.user_id)
+            user_balance = user_balance_obj.balance_hp
             if user_balance < amount_hp:
                 raise ValueError("Insufficient Happy Paisa balance")
             
