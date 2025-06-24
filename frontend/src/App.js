@@ -10,6 +10,7 @@ import Travel from "./pages/Travel";
 import Recharge from "./pages/Recharge";
 import ShopUpdated from "./pages/ShopUpdated";
 import WalletUpdated from "./pages/WalletUpdated";
+import AutomationDashboard from "./components/automation/AutomationDashboard";
 
 const App = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
