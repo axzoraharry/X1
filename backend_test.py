@@ -532,8 +532,32 @@ def test_p2p_transfer(from_user_id, to_user_id=None):
                 )
                 if mint_response.status_code == 200:
                     print(f"Successfully minted {mint_amount} HP")
-                    # Wait a moment for the transaction to be processed
-                    time.sleep(2)
+                    tx_hash = mint_response.json().get("transaction_hash")
+                    
+                    # Wait for the transaction to be processed
+                    print("Waiting for transaction to be processed...")
+                    time.sleep(5)
+                    
+                    # Sync the transaction
+                    sync_response = requests.post(f"{BACKEND_URL}/blockchain/sync/transaction/{tx_hash}")
+                    if sync_response.status_code == 200:
+                        print("Transaction synced successfully")
+                    
+                    # Check balance again
+                    balance_response = requests.get(f"{BACKEND_URL}/blockchain/user/{from_user_id}/balance")
+                    if balance_response.status_code == 200:
+                        new_balance = balance_response.json().get("balance_hp", 0)
+                        print(f"Updated balance: {new_balance} HP")
+                        
+                        if new_balance < 0.2:
+                            print("Balance still too low, waiting longer...")
+                            time.sleep(5)
+                            
+                            # Check balance one more time
+                            balance_response = requests.get(f"{BACKEND_URL}/blockchain/user/{from_user_id}/balance")
+                            if balance_response.status_code == 200:
+                                final_balance = balance_response.json().get("balance_hp", 0)
+                                print(f"Final balance: {final_balance} HP")
                 else:
                     print(f"Failed to mint tokens: {mint_response.status_code} - {mint_response.text}")
         else:
