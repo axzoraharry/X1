@@ -34,7 +34,7 @@ async def root():
         "version": "2.0.0",
         "features": [
             "Advanced Voice AI Integration",
-            "Happy Paisa Digital Currency",
+            "Happy Paisa Blockchain Currency",
             "Virtual Debit Cards",
             "Travel Booking Services", 
             "Recharge & Bill Payment",
