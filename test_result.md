@@ -406,8 +406,7 @@ metadata:
 test_plan:
   current_focus:
     - "n8n Automation Integration Frontend"
-  stuck_tasks:
-    - "n8n Automation Integration Frontend"
+  stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
