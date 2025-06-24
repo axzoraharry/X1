@@ -51,6 +51,13 @@ const navigationItems = [
     description: 'Digital currency wallet'
   },
   {
+    title: 'Automation',
+    href: '/automation',
+    icon: Settings,
+    description: 'n8n workflows & AI',
+    badge: 'Smart'
+  },
+  {
     title: 'Git Activity',
     href: '/git',
     icon: GitBranch,
