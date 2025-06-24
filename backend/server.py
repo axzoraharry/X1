@@ -76,6 +76,7 @@ app.include_router(recharge.router)
 app.include_router(ecommerce.router)
 app.include_router(dashboard.router)
 app.include_router(automation.router)  # n8n automation integration
+app.include_router(analytics.router)   # Advanced analytics and AI insights
 app.include_router(voice_advanced.router)  # Advanced voice integration
 
 # Include the main API router
