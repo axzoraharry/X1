@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Cog8ToothIcon,
-  BellIcon,
-  CloudArrowUpIcon,
-  CpuChipIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon,
-  ChartBarIcon
+  Cog8Tooth as Cog8ToothIcon,
+  Bell as BellIcon,
+  CloudArrowUp as CloudArrowUpIcon,
+  CpuChip as CpuChipIcon,
+  CheckCircle as CheckCircleIcon,
+  XCircle as XCircleIcon,
+  Clock as ClockIcon,
+  ChartBar as ChartBarIcon
 } from '@heroicons/react/24/outline';
 import AutomationService from '../../services/automationService';
 
