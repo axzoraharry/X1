@@ -90,11 +90,11 @@ class AnalyticsService:
             }
             
             # Store in MongoDB for custom analytics
-            if self.analytics_collection:
+            if self.analytics_collection is not None:
                 await self.analytics_collection.insert_one(event_data)
             
             # Send to GA4 if client is available
-            if self.ga4_client:
+            if self.ga4_client is not None:
                 try:
                     # Using direct GA4 Measurement Protocol API
                     ga4_endpoint = f"https://www.google-analytics.com/mp/collect?measurement_id={self.ga4_client['measurement_id']}&api_secret={self.ga4_client['api_secret']}"
