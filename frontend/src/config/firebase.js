@@ -128,10 +128,19 @@ export const AnalyticsEvents = {
 export const trackEvent = (eventName, parameters = {}) => {
   if (analytics) {
     try {
-      logEvent(analytics, eventName, {
-        timestamp: new Date().toISOString(),
-        ...parameters
-      });
+      if (typeof analytics.logEvent === 'function') {
+        // Real Firebase analytics
+        logEvent(analytics, eventName, {
+          timestamp: new Date().toISOString(),
+          ...parameters
+        });
+      } else {
+        // Mock analytics
+        analytics.logEvent(eventName, {
+          timestamp: new Date().toISOString(),
+          ...parameters
+        });
+      }
     } catch (error) {
       console.warn("Analytics event tracking failed:", error);
     }
@@ -141,7 +150,13 @@ export const trackEvent = (eventName, parameters = {}) => {
 export const trackUserProperties = (properties) => {
   if (analytics) {
     try {
-      setUserProperties(analytics, properties);
+      if (typeof analytics.setUserProperties === 'function') {
+        // Real Firebase analytics
+        setUserProperties(analytics, properties);
+      } else {
+        // Mock analytics
+        analytics.setUserProperties(properties);
+      }
     } catch (error) {
       console.warn("User properties tracking failed:", error);
     }
@@ -151,7 +166,13 @@ export const trackUserProperties = (properties) => {
 export const trackUserId = (userId) => {
   if (analytics) {
     try {
-      setUserId(analytics, userId);
+      if (typeof analytics.setUserId === 'function') {
+        // Real Firebase analytics
+        setUserId(analytics, userId);
+      } else {
+        // Mock analytics
+        analytics.setUserId(userId);
+      }
     } catch (error) {
       console.warn("User ID tracking failed:", error);
     }
