@@ -730,29 +730,71 @@ def test_virtual_cards_blockchain_integration(user_id):
     
     try:
         # First check if user has KYC approved
+        print(f"Checking KYC status for user {user_id}")
         kyc_response = requests.get(f"{BACKEND_URL}/virtual-cards/kyc/user/{user_id}")
+        print(f"KYC Response: {kyc_response.status_code} - {kyc_response.text}")
         
         # If KYC not found or not approved, create demo KYC
         if kyc_response.status_code != 200 or kyc_response.json().get("kyc_status") != "approved":
+            print("KYC not approved, creating demo KYC")
             demo_kyc_response = requests.post(
                 f"{BACKEND_URL}/virtual-cards/demo/create-kyc?user_id={user_id}&full_name=Test User"
             )
+            print(f"Demo KYC Response: {demo_kyc_response.status_code} - {demo_kyc_response.text}")
             if demo_kyc_response.status_code != 200:
                 log_test("Create Demo KYC", False, demo_kyc_response)
                 return False
             log_test("Create Demo KYC", True)
         
+        # Check user's balance
+        balance_response = requests.get(f"{BACKEND_URL}/blockchain/user/{user_id}/balance")
+        if balance_response.status_code == 200:
+            balance = balance_response.json().get("balance_hp", 0)
+            print(f"Current balance: {balance} HP")
+            
+            # If balance is too low, mint some tokens first
+            if balance < 0.5:  # Need at least 0.5 HP for the test
+                mint_amount = 1.0
+                print(f"Balance too low, minting {mint_amount} HP")
+                mint_response = requests.post(
+                    f"{BACKEND_URL}/blockchain/user/{user_id}/mint?amount_hp={mint_amount}&reference_id=test_mint_{uuid.uuid4().hex[:8]}"
+                )
+                if mint_response.status_code == 200:
+                    print(f"Successfully minted {mint_amount} HP")
+                    tx_hash = mint_response.json().get("transaction_hash")
+                    
+                    # Wait for the transaction to be processed
+                    print("Waiting for transaction to be processed...")
+                    time.sleep(5)
+                    
+                    # Sync the transaction
+                    sync_response = requests.post(f"{BACKEND_URL}/blockchain/sync/transaction/{tx_hash}")
+                    if sync_response.status_code == 200:
+                        print("Transaction synced successfully")
+                    
+                    # Check balance again
+                    balance_response = requests.get(f"{BACKEND_URL}/blockchain/user/{user_id}/balance")
+                    if balance_response.status_code == 200:
+                        new_balance = balance_response.json().get("balance_hp", 0)
+                        print(f"Updated balance: {new_balance} HP")
+                else:
+                    print(f"Failed to mint tokens: {mint_response.status_code} - {mint_response.text}")
+        
         # Get user's cards
+        print("Getting user's cards")
         cards_response = requests.get(f"{BACKEND_URL}/virtual-cards/user/{user_id}")
+        print(f"Cards Response: {cards_response.status_code} - {cards_response.text}")
         
         # Create a card if user doesn't have one
         if cards_response.status_code != 200 or len(cards_response.json()) == 0:
+            print("No cards found, creating a new virtual card")
             card_data = {
                 "user_id": user_id,
                 "card_holder_name": "Test User",
                 "initial_load_amount_hp": 0.0
             }
             create_card_response = requests.post(f"{BACKEND_URL}/virtual-cards/", json=card_data)
+            print(f"Create Card Response: {create_card_response.status_code} - {create_card_response.text}")
             if create_card_response.status_code != 200:
                 log_test("Create Virtual Card", False, create_card_response)
                 return False
@@ -761,11 +803,14 @@ def test_virtual_cards_blockchain_integration(user_id):
             log_test("Create Virtual Card", True)
         else:
             card_id = cards_response.json()[0]["id"]
+            print(f"Using existing card with ID: {card_id}")
         
         # Test loading card from blockchain balance
+        print(f"Loading card {card_id} with 0.2 HP")
         load_response = requests.post(
             f"{BACKEND_URL}/virtual-cards/{card_id}/load?amount_hp=0.2&user_id={user_id}"
         )
+        print(f"Load Card Response: {load_response.status_code} - {load_response.text}")
         if load_response.status_code == 200 and load_response.json().get("success") == True:
             log_test("Load Card from Blockchain Balance", True)
         else:
@@ -773,9 +818,11 @@ def test_virtual_cards_blockchain_integration(user_id):
             return False
         
         # Test card transactions
+        print("Getting card transactions")
         transactions_response = requests.get(
             f"{BACKEND_URL}/virtual-cards/{card_id}/transactions?user_id={user_id}"
         )
+        print(f"Card Transactions Response: {transactions_response.status_code} - {transactions_response.text}")
         if transactions_response.status_code == 200:
             log_test("Card Transactions with Blockchain", True)
         else:
@@ -783,6 +830,7 @@ def test_virtual_cards_blockchain_integration(user_id):
             return False
         
         # Test simulating a card transaction
+        print("Simulating a card transaction")
         transaction_request = {
             "card_id": card_id,
             "amount_inr": 100.0,  # 0.1 HP
@@ -794,6 +842,7 @@ def test_virtual_cards_blockchain_integration(user_id):
             f"{BACKEND_URL}/virtual-cards/simulate-transaction", 
             json=transaction_request
         )
+        print(f"Simulate Transaction Response: {simulate_response.status_code} - {simulate_response.text}")
         if simulate_response.status_code == 200:
             log_test("Card Transaction with Blockchain", True)
         else:
@@ -802,6 +851,7 @@ def test_virtual_cards_blockchain_integration(user_id):
         
         return True
     except Exception as e:
+        print(f"Virtual Cards Blockchain Integration Exception: {str(e)}")
         log_test("Virtual Cards Blockchain Integration", False, error=str(e))
         return False
 
