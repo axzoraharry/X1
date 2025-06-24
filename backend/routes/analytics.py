@@ -223,8 +223,7 @@ async def track_booking(request: BookingEventRequest):
         return {
             "status": "success",
             "message": f"{request.booking_type} booking tracked",
-            "booking_id": request.booking_id,
-            "status": request.status
+            "booking_id": request.booking_id
         }
         
     except Exception as e:
