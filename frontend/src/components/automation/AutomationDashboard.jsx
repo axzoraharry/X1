@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Cog8Tooth as Cog8ToothIcon,
+  Settings as Cog8ToothIcon,
   Bell as BellIcon,
-  CloudArrowUp as CloudArrowUpIcon,
-  CpuChip as CpuChipIcon,
+  CloudUpload as CloudArrowUpIcon,
+  Cpu as CpuChipIcon,
   CheckCircle as CheckCircleIcon,
   XCircle as XCircleIcon,
   Clock as ClockIcon,
-  ChartBar as ChartBarIcon
-} from '@heroicons/react/24/outline';
+  BarChart as ChartBarIcon
+} from 'lucide-react';
 import AutomationService from '../../services/automationService';
 
 const AutomationDashboard = ({ userId }) => {
