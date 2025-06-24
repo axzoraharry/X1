@@ -91,6 +91,28 @@ const AutomationAnalytics = ({ userId }) => {
     </motion.div>
   );
 
+  const SimpleChart = ({ data, title, type = 'bar' }) => (
+    <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
+      <div className="space-y-3">
+        {data.slice(0, 5).map((item, index) => (
+          <div key={index} className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">{item.name || item.date || `Item ${index + 1}`}</span>
+            <div className="flex items-center gap-3">
+              <div className="w-24 bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-500 h-2 rounded-full"
+                  style={{ width: `${Math.min((item.value || item.success || 0) / Math.max(...data.map(d => d.value || d.success || 1)) * 100, 100)}%` }}
+                ></div>
+              </div>
+              <span className="text-sm font-semibold text-gray-900">{item.value || item.success || 0}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="space-y-6">
