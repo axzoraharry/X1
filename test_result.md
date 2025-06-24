@@ -402,14 +402,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "User Management System"
-    - "Happy Paisa Wallet System"
-    - "API Integration Services"
-    - "User Context & Authentication"
-    - "Real-time Dashboard"
-    - "n8n Automation Integration"
+    - "n8n Automation Integration Frontend"
   stuck_tasks:
-    - "n8n Automation Integration"
+    - "n8n Automation Integration Frontend"
   test_all: false
   test_priority: "high_first"
 
