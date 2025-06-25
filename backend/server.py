@@ -56,6 +56,7 @@ async def health_check():
             "services": {
                 "wallet": "operational",
                 "blockchain": "operational",
+                "friendli_ai": "operational",
                 "virtual_cards": "operational",
                 "travel": "operational", 
                 "recharge": "operational",
