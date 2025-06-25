@@ -4,11 +4,13 @@ Friendli AI API Routes - Enhanced AI capabilities for financial analytics
 from fastapi import APIRouter, HTTPException, Query, BackgroundTasks
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+import logging
 
 from ..services.friendli_ai_service import friendli_ai_service
 from ..services.blockchain_gateway_service import blockchain_gateway
 from ..services.blockchain_wallet_service import BlockchainWalletService
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/ai", tags=["friendli-ai"])
 
 @router.post("/analyze-transaction")
