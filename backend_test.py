@@ -942,6 +942,203 @@ def test_blockchain_api(user_id):
         log_test("Blockchain API", False, error=str(e))
         return False
 
+# Friendli AI Tests
+def test_ai_health():
+    """Test Friendli AI health check endpoint"""
+    try:
+        response = requests.get(f"{BACKEND_URL}/ai/health")
+        if response.status_code == 200 and response.json().get("status") == "healthy":
+            log_test("Friendli AI Health Check", True)
+            return True
+        else:
+            log_test("Friendli AI Health Check", False, response)
+            return False
+    except Exception as e:
+        log_test("Friendli AI Health Check", False, error=str(e))
+        return False
+
+def test_analyze_transaction(user_id):
+    """Test transaction analysis endpoint"""
+    if not user_id:
+        log_test("Transaction Analysis - No User ID", False)
+        return False
+    
+    try:
+        # First, we need a transaction hash to analyze
+        # Let's mint some tokens to get a transaction hash
+        mint_response = requests.post(
+            f"{BACKEND_URL}/blockchain/user/{user_id}/mint?amount_hp=0.1&reference_id=test_mint_{uuid.uuid4().hex[:8]}"
+        )
+        
+        if mint_response.status_code != 200:
+            log_test("Transaction Analysis - Failed to create test transaction", False, mint_response)
+            return False
+        
+        tx_hash = mint_response.json().get("transaction_hash")
+        
+        # Wait for transaction to be processed
+        time.sleep(2)
+        
+        # Now analyze the transaction
+        response = requests.post(f"{BACKEND_URL}/ai/analyze-transaction?transaction_hash={tx_hash}")
+        
+        if response.status_code == 200 and "analysis" in response.json():
+            analysis = response.json()["analysis"]
+            log_test("Transaction Analysis", True)
+            print(f"  Risk Level: {analysis.get('risk_level')}")
+            print(f"  Risk Score: {analysis.get('risk_score')}")
+            return True
+        else:
+            log_test("Transaction Analysis", False, response)
+            return False
+    except Exception as e:
+        log_test("Transaction Analysis", False, error=str(e))
+        return False
+
+def test_wallet_insights(user_id):
+    """Test wallet insights endpoint"""
+    if not user_id:
+        log_test("Wallet Insights - No User ID", False)
+        return False
+    
+    try:
+        response = requests.get(f"{BACKEND_URL}/ai/wallet-insights/{user_id}")
+        
+        if response.status_code == 200 and "insights" in response.json():
+            insights = response.json()["insights"]
+            log_test("Wallet Insights", True)
+            print(f"  Financial Health Score: {insights.get('financial_health_score')}")
+            return True
+        else:
+            log_test("Wallet Insights", False, response)
+            return False
+    except Exception as e:
+        log_test("Wallet Insights", False, error=str(e))
+        return False
+
+def test_voice_enhancement():
+    """Test voice enhancement endpoint"""
+    try:
+        test_query = "What's my current balance?"
+        response = requests.post(f"{BACKEND_URL}/ai/voice-enhance?query={test_query}")
+        
+        if response.status_code == 200 and "enhanced_response" in response.json():
+            log_test("Voice Enhancement", True)
+            return True
+        else:
+            log_test("Voice Enhancement", False, response)
+            return False
+    except Exception as e:
+        log_test("Voice Enhancement", False, error=str(e))
+        return False
+
+def test_fraud_detection(user_id):
+    """Test fraud detection endpoint"""
+    if not user_id:
+        log_test("Fraud Detection - No User ID", False)
+        return False
+    
+    try:
+        response = requests.post(f"{BACKEND_URL}/ai/fraud-detection/{user_id}")
+        
+        if response.status_code == 200 and "fraud_analysis" in response.json():
+            fraud_analysis = response.json()["fraud_analysis"]
+            log_test("Fraud Detection", True)
+            print(f"  Alert Level: {fraud_analysis.get('alert_level')}")
+            return True
+        else:
+            log_test("Fraud Detection", False, response)
+            return False
+    except Exception as e:
+        log_test("Fraud Detection", False, error=str(e))
+        return False
+
+def test_ai_chat():
+    """Test AI chat completion endpoint"""
+    try:
+        chat_request = {
+            "messages": [
+                {"role": "user", "content": "Tell me about Happy Paisa blockchain currency"}
+            ],
+            "max_tokens": 100,
+            "temperature": 0.7
+        }
+        
+        response = requests.post(f"{BACKEND_URL}/ai/chat", json=chat_request)
+        
+        if response.status_code == 200 and "response" in response.json():
+            log_test("AI Chat Completion", True)
+            return True
+        else:
+            log_test("AI Chat Completion", False, response)
+            return False
+    except Exception as e:
+        log_test("AI Chat Completion", False, error=str(e))
+        return False
+
+def test_platform_insights():
+    """Test platform insights endpoint"""
+    try:
+        response = requests.get(f"{BACKEND_URL}/ai/analytics/insights?days=7")
+        
+        if response.status_code == 200 and "platform_insights" in response.json():
+            log_test("Platform Analytics Insights", True)
+            return True
+        else:
+            log_test("Platform Analytics Insights", False, response)
+            return False
+    except Exception as e:
+        log_test("Platform Analytics Insights", False, error=str(e))
+        return False
+
+def test_friendli_ai_api(user_id):
+    """Test all Friendli AI API endpoints"""
+    if not user_id:
+        log_test("Friendli AI API - No User ID", False)
+        return False
+    
+    try:
+        # Test AI health
+        ai_health_ok = test_ai_health()
+        if not ai_health_ok:
+            return False
+        
+        # Test transaction analysis
+        transaction_analysis_ok = test_analyze_transaction(user_id)
+        if not transaction_analysis_ok:
+            return False
+        
+        # Test wallet insights
+        wallet_insights_ok = test_wallet_insights(user_id)
+        if not wallet_insights_ok:
+            return False
+        
+        # Test voice enhancement
+        voice_enhancement_ok = test_voice_enhancement()
+        if not voice_enhancement_ok:
+            return False
+        
+        # Test fraud detection
+        fraud_detection_ok = test_fraud_detection(user_id)
+        if not fraud_detection_ok:
+            return False
+        
+        # Test AI chat
+        ai_chat_ok = test_ai_chat()
+        if not ai_chat_ok:
+            return False
+        
+        # Test platform insights
+        platform_insights_ok = test_platform_insights()
+        if not platform_insights_ok:
+            return False
+        
+        return True
+    
+    except Exception as e:
+        log_test("Friendli AI API", False, error=str(e))
+        return False
+
 def run_tests():
     """Run all tests"""
     print("Starting API tests...")
@@ -965,6 +1162,13 @@ def run_tests():
         print("Blockchain API tests failed.")
     else:
         print("Blockchain API tests passed successfully!")
+    
+    # Test Friendli AI API
+    friendli_ai_ok = test_friendli_ai_api(user_id)
+    if not friendli_ai_ok:
+        print("Friendli AI API tests failed.")
+    else:
+        print("Friendli AI API tests passed successfully!")
     
     # Print summary
     print("\nTest Summary:")
