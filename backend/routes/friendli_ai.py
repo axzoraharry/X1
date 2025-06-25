@@ -181,14 +181,14 @@ async def detect_fraud_patterns(user_id: str):
         raise HTTPException(status_code=500, detail=f"Fraud detection failed: {str(e)}")
 
 @router.post("/chat")
-async def ai_chat(
-    messages: List[Dict[str, str]] = Query(..., description="Chat messages in OpenAI format"),
-    model: Optional[str] = Query(None, description="Friendli AI model to use"),
-    max_tokens: Optional[int] = Query(500, description="Maximum tokens in response"),
-    temperature: Optional[float] = Query(0.7, description="Response creativity (0-1)")
-):
+async def ai_chat(request_body: Dict[str, Any]):
     """General AI chat endpoint using Friendli AI"""
     try:
+        messages = request_body.get("messages", [])
+        model = request_body.get("model")
+        max_tokens = request_body.get("max_tokens", 500)
+        temperature = request_body.get("temperature", 0.7)
+        
         response = await friendli_ai_service.chat_completion(
             messages=messages,
             model=model,
