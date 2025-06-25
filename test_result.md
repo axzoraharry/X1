@@ -640,6 +640,7 @@ metadata:
 test_plan:
   current_focus:
     - "Virtual Cards Functionality"
+    - "Friendli AI Integration"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
